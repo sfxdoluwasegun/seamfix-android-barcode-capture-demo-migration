@@ -78,7 +78,7 @@ class EncodeActivity : AppCompatActivity() {
             finish()
         }
 
-        faceDetector = FirebaseVision.getInstance().getVisionFaceDetector(getStrictFaceDetectionOptions())
+        faceDetector = FirebaseVision.getInstance().getVisionFaceDetector(Utils.getStrictFaceDetectionOptions())
     }
 
     /**

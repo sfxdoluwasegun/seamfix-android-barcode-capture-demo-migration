@@ -14,6 +14,7 @@ import android.util.Log
 import android.util.SparseIntArray
 import android.view.Surface
 import androidx.annotation.RequiresApi
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.barcode.FirebaseVisionBarcodeDetector
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
@@ -45,7 +46,7 @@ class CameraActivity : AppCompatActivity() {
         camera.mapGesture(Gesture.TAP, GestureAction.FOCUS) // Enable tap to focus Camera
 
         // Obtain an instance of the firebase instance using the detector options set
-        val detectorOptions = getBarcodeDetectorOptions()
+        val detectorOptions = Utils.getBarcodeDetectorOptions()
         detector = FirebaseVision.getInstance().getVisionBarcodeDetector(detectorOptions)
 
         // Set up vibration and vibration feedback
@@ -68,7 +69,7 @@ class CameraActivity : AppCompatActivity() {
             val size = frame.size
 
             // Generate Metadata
-            val metaData = getFirebaseVisionImageMetaData(size.width, size.height, adjustedRotation)
+            val metaData = Utils.getFirebaseVisionImageMetaData(size.width, size.height, adjustedRotation)
 
             // Generate Image from metadata
             val image = FirebaseVisionImage.fromByteArray(data, metaData)
@@ -76,24 +77,24 @@ class CameraActivity : AppCompatActivity() {
             // Run detection
             val task = detector.detectInImage(image)
 
-            task.addOnSuccessListener { barcodes ->
+            // Get the result
+            val result = Tasks.await(task)
+            val barcode = result.firstOrNull()
+            barcode?.let {
 
-                if (barcodes.isNotEmpty()) {
+                if (hasDetectedBarcode.not()) {
 
-                    if (hasDetectedBarcode.not()) {
+                    vibrate()
 
-                        vibrate()
-
-                        val rawValue = barcodes[0].rawValue
-                        Intent(this, DecodedActivity::class.java).also { intent ->
-                            intent.putExtra("value", rawValue)
-                            startActivity(intent)
-                        }
-
-                        finish()
-
-                        hasDetectedBarcode = true
+                    val rawValue = barcode.rawValue
+                    Intent(this, DecodedActivity::class.java).also { intent ->
+                        intent.putExtra("value", rawValue)
+                        startActivity(intent)
                     }
+
+                    hasDetectedBarcode = true
+
+                    finish()
                 }
             }
         }
