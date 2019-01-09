@@ -17,8 +17,6 @@ class Utils {
         fun getStrictFaceDetectionOptions(): FirebaseVisionFaceDetectorOptions {
             return with(FirebaseVisionFaceDetectorOptions.Builder()) {
                 setPerformanceMode(FirebaseVisionFaceDetectorOptions.ACCURATE)
-                setClassificationMode(FirebaseVisionFaceDetectorOptions.ALL_CLASSIFICATIONS)
-                setLandmarkMode(FirebaseVisionFaceDetectorOptions.ALL_LANDMARKS)
                 setMinFaceSize(0.15f)
                 build()
             }

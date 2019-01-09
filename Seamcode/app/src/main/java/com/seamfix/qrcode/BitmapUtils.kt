@@ -102,8 +102,7 @@ fun Bitmap.addPhotoToGallery(context: Context, name: String) {
     val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath
         .plus("/")
         .plus("Seamfix Qrcode")
-    val parentDir = File(path).apply { mkdir() }
-    val photoFile = File(parentDir, "${name}_${System.currentTimeMillis()}.png")
+    val photoFile = File(path, "${name}_${System.currentTimeMillis()}.png")
 
     this.compress(Bitmap.CompressFormat.PNG, 100, FileOutputStream(photoFile))
 

@@ -11,7 +11,6 @@ import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.*
-import com.google.android.gms.tasks.Tasks
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetector
@@ -31,6 +30,8 @@ class EncodeActivity : AppCompatActivity() {
     private lateinit var finalBitmap: Bitmap
     private lateinit var imageView: ImageView
     private lateinit var faceDetector: FirebaseVisionFaceDetector
+
+    private var isFaceProcessed = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,25 +58,34 @@ class EncodeActivity : AppCompatActivity() {
                 }
             }
 
-            // Convert Bitmap to Bas64
-            val face = finalBitmap.toBase64(20)
+            when {
+                listOfCredentials.isEmpty() -> Toast.makeText(this, "Please fill in Credentials", Toast.LENGTH_SHORT).show()
+                isFaceProcessed.not() -> Toast.makeText(this, "Please capture Face", Toast.LENGTH_SHORT).show()
+                else -> {
 
-            listOfCredentials.add(face)
-            val fullCredentials = listOfCredentials.joinToString(" ", "", "")
-            Toast.makeText(this, "${fullCredentials.length}", Toast.LENGTH_LONG).show()
+                    encodeButton.text = "Encoding"
 
-            val qrCode = QRCode.from(fullCredentials)
-                .to(ImageType.PNG)
-                .withSize(400, 400)
-                .bitmap()
+                    // Convert Bitmap to Bas64
+                    val face = finalBitmap.toBase64(20)
 
-            qrCode.addPhotoToGallery(this, firstname_editText.text.toString())
+                    listOfCredentials.add(face)
+                    val fullCredentials = listOfCredentials.joinToString("-", "", "")
+                    Toast.makeText(this, "${fullCredentials.length}", Toast.LENGTH_LONG).show()
 
-            qrCodeImageView.setImageBitmap(qrCode)
+                    val qrCode = QRCode.from(fullCredentials)
+                        .to(ImageType.PNG)
+                        .withSize(400, 400)
+                        .bitmap()
 
-            Toast.makeText(this, "QR CODE SAVED", Toast.LENGTH_LONG).show()
+                    qrCode.addPhotoToGallery(this, firstname_editText.text.toString())
 
-            finish()
+                    Toast.makeText(this, "QR CODE SAVED", Toast.LENGTH_LONG).show()
+
+                    finish()
+                }
+            }
+
+
         }
 
         faceDetector = FirebaseVision.getInstance().getVisionFaceDetector(Utils.getStrictFaceDetectionOptions())
@@ -102,30 +112,33 @@ class EncodeActivity : AppCompatActivity() {
      * This method, is used to detect a Face in a picture and crop out the Face as well as resize it
      * @param face to detect and crop
      */
-    private fun detectFace(face: Bitmap) {
+    private fun detectCropAndResizeFace(face: Bitmap) {
 
-        // Show progress bar and disable encode button
+        // show progress bar and disable encode button
+        parent_layout.alpha = 0.3F
         progressBar.visibility = View.VISIBLE
         encode_button.isEnabled = false
 
         /* Run a Face detection operation on the fireBaseVisionImage, the compress, crop and resize the detected Face*/
         val fireBaseVisionImage = FirebaseVisionImage.fromBitmap(face)
         val task = faceDetector.detectInImage(fireBaseVisionImage)
-        Thread {
-            val result = Tasks.await(task)
+        task.addOnSuccessListener { result ->
             if (result.size > 0) {
                 finalBitmap = face.compress(50)
                     .cropDetectedFace(result[0])
                     .resize(120)
 
-                // Hide progress bar, enable encode button and set compressed Bitmap on the Image view
-                runOnUiThread {
-                    progressBar.visibility = View.INVISIBLE
-                    encode_button.isEnabled = true
-                    imageView.setImageBitmap(finalBitmap)
-                }
+                /* Hide progress bar, enable encode button and display image */
+                parent_layout.alpha = 1F
+                progressBar.visibility = View.INVISIBLE
+                encode_button.isEnabled = true
+                imageView.setImageBitmap(finalBitmap)
+
+                // Flag isFaceProcessed to true
+                isFaceProcessed = true
+
             }
-        }.start()
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -133,7 +146,7 @@ class EncodeActivity : AppCompatActivity() {
             CAMERA_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     val rotatedBitmap = BitmapFactory.decodeFile(imageFile.absolutePath).rotate(imageFile)
-                    detectFace(rotatedBitmap)
+                    detectCropAndResizeFace(rotatedBitmap)
                 }
             }
         }

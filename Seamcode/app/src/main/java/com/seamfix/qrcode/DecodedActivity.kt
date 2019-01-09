@@ -25,7 +25,7 @@ class DecodedActivity : AppCompatActivity() {
         setContentView(R.layout.activity_decoded)
 
         val rawValue = intent.getStringExtra("value")
-        val rawValues = rawValue.split(" ")
+        val rawValues = rawValue.split("-")
 
         if (rawValues.size == 4) {
             firstname_textview.text = rawValues[0]
