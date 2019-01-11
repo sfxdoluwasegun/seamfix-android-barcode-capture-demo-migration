@@ -99,16 +99,17 @@ fun Bitmap.toBase64(quality: Int): String {
  */
 fun Bitmap.addPhotoToGallery(context: Context, name: String) {
 
-    val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath
+    val path = Environment.getExternalStorageDirectory().absolutePath
         .plus("/")
         .plus("Seamfix Qrcode")
-    val photoFile = File(path, "${name}_${System.currentTimeMillis()}.png")
+    val parentDir = File(path).apply { mkdir() }
+    val photoFile = File(parentDir, "${name}_${System.currentTimeMillis()}.png")
 
-    this.compress(Bitmap.CompressFormat.PNG, 100, FileOutputStream(photoFile))
-
-    Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE).also { intent ->
-        intent.data = Uri.fromFile(photoFile)
-        context.sendBroadcast(intent)
+    this.compress(Bitmap.CompressFormat.PNG, 100, FileOutputStream(photoFile)).also {
+        Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE).also { intent ->
+            intent.data = Uri.fromFile(photoFile)
+            context.sendBroadcast(intent)
+        }
     }
 }
 
