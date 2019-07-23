@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">QRCODE</string>
+
+    <string name="request_permissions_information">Please grant all permissions to allow app to perform properly
+    </string>
+    <string name="request_permissions_information_positive">Ok</string>
+    <string name="request_permissions_information_negative">Cancel</string>
+
+    <string name="settings_permissions_information">Please go to settings to grant permissions</string>
+    <string name="settings_permissions_information_positive">Go to settings</string>
+    <string name="settings_permissions_information_negative">Cancel</string>
 </resources>

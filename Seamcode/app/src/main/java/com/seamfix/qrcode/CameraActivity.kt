@@ -62,6 +62,7 @@ class CameraActivity : AppCompatActivity() {
         // Attach a listener for incoming Frames from the Camera source
         var hasDetectedBarcode = false
         camera.addFrameProcessor { frame ->
+
             val data = frame.data
             val rotation = frame.rotation
             val time = frame.time
@@ -75,8 +76,7 @@ class CameraActivity : AppCompatActivity() {
 
             // Run detection
             val task = detector.detectInImage(image)
-
-            task.addOnSuccessListener { barcodes ->
+            task.addOnSuccessListener(this) { barcodes ->
 
                 if (barcodes.isNotEmpty()) {
 

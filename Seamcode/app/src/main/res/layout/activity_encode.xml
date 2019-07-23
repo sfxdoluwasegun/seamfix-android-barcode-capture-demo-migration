@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".EncodeActivity"
+    tools:context="com.seamfix.qrcode.EncodeActivity"
     android:id="@+id/parent_layout">
 
     <EditText
@@ -59,7 +59,6 @@
         app:layout_constraintStart_toEndOf="@+id/lastname_editText"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0"
-        app:srcCompat="@drawable/ic_perm_identity_black_24dp"
         tools:alpha="0.2" />
 
     <Button
@@ -71,27 +70,24 @@
         android:layout_marginBottom="8dp"
         android:background="@color/colorPrimaryDark"
         android:text="ENCODE"
+        android:enabled="false"
         android:textColor="@color/colorWhite"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <TextView
-        android:id="@+id/capture_button"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="8dp"
-        android:background="@color/colorWhite"
-        android:gravity="center"
-        android:text="Capture"
-        android:textColor="@color/colorBlack"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/phone_editText"
-        app:layout_constraintTop_toBottomOf="@+id/image" />
+    <Button
+            android:id="@+id/capture_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:background="@color/colorPrimaryDark"
+            android:gravity="center"
+            android:text="Capture"
+            android:textColor="@color/colorWhite"
+            app:layout_constraintEnd_toEndOf="@+id/image"
+            app:layout_constraintTop_toBottomOf="@+id/image"/>
 
     <ImageView
         android:id="@+id/qrcode_bitmap"

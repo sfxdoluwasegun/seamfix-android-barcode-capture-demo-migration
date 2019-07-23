@@ -9,6 +9,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.View
 import android.widget.*
 import com.google.android.gms.tasks.Tasks
@@ -61,17 +62,18 @@ class EncodeActivity : AppCompatActivity() {
             val face = finalBitmap.toBase64(20)
 
             listOfCredentials.add(face)
+
             val fullCredentials = listOfCredentials.joinToString(" ", "", "")
-            Toast.makeText(this, "${fullCredentials.length}", Toast.LENGTH_LONG).show()
+            Log.e(EncodeActivity::class.java.simpleName, "${fullCredentials.length}")
 
             val qrCode = QRCode.from(fullCredentials)
                 .to(ImageType.PNG)
                 .withSize(400, 400)
                 .bitmap()
 
-            qrCode.addPhotoToGallery(this, firstname_editText.text.toString())
-
             qrCodeImageView.setImageBitmap(qrCode)
+
+            qrCode.addPhotoToGallery(this, firstname_editText.text.toString())
 
             Toast.makeText(this, "QR CODE SAVED", Toast.LENGTH_LONG).show()
 
