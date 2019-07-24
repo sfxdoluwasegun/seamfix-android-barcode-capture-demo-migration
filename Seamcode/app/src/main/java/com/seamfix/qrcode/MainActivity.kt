@@ -8,9 +8,9 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.support.v4.app.ActivityCompat
-import android.support.v4.app.DialogFragment
-import android.support.v7.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.fragment.app.DialogFragment
+import androidx.appcompat.app.AppCompatActivity
 import android.widget.Toast
 import androidx.cardview.widget.CardView
 import com.seamfix.seamcode.R
@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         decodeCardview.setOnClickListener {
-            Intent(this, CameraActivity::class.java).also { intent ->
+            Intent(this, DecodeActivity::class.java).also { intent ->
                 startActivityForResult(intent, CAMERA_ACTIVITY_REQUEST_CODE)
             }
         }

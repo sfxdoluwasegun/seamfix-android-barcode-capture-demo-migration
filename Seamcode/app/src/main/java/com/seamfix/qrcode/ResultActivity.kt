@@ -7,9 +7,9 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.support.v4.content.FileProvider
-import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import com.google.gson.JsonObject
 import com.seamfix.qrcode.callbacks.FaceMatchCallback
 import com.seamfix.qrcode.rest.FaceMatchClient
@@ -20,7 +20,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import java.io.File
 
-class DecodedActivity : AppCompatActivity() {
+class ResultActivity : AppCompatActivity() {
 
     companion object {
         private const val CAMERA_REQUEST_CODE = 100
@@ -62,16 +62,16 @@ class DecodedActivity : AppCompatActivity() {
 
         faceMatchCallback = object : FaceMatchCallback() {
             override fun onFaceMatchResponse(isMatch: Boolean) {
-                Log.e(DecodedActivity::class.simpleName, "$isMatch")
+                Log.e(ResultActivity::class.simpleName, "$isMatch")
                 match_textview.text = "Match: $isMatch"
             }
 
             override fun onFaceMatchError(message: String) {
-                Log.e(DecodedActivity::class.simpleName, message)
+                Log.e(ResultActivity::class.simpleName, message)
             }
 
             override fun onWebServiceInactive() {
-                Log.e(DecodedActivity::class.simpleName, "CountdownTimer Finished")
+                Log.e(ResultActivity::class.simpleName, "CountdownTimer Finished")
                 faceMatchRetrofitCall.cancel()
             }
 
@@ -101,7 +101,8 @@ class DecodedActivity : AppCompatActivity() {
             CAMERA_REQUEST_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     val rotatedBitmap = BitmapFactory.decodeFile(imageFile.absolutePath).rotate(imageFile)
-                    matchFaces(faceInBarcode, rotatedBitmap, faceMatchCallback)
+                    match_button.text = "Matching"
+                    matchFaces(faceInBarcode, rotatedBitmap.resize(480), faceMatchCallback)
                 }
             }
         }
@@ -123,16 +124,20 @@ class DecodedActivity : AppCompatActivity() {
 
         faceMatchService?.let {
             faceMatchRetrofitCall =
-                faceMatchService.matchFace(FACE_MATCH_ENGINE_API_KEY, FACE_MATCH_ENGINE_API_URL, jsonObject)
+                faceMatchService.matchFace(FACE_MATCH_ENGINE_API_KEY, jsonObject)
             faceMatchRetrofitCall.enqueue(object : Callback<JsonObject> {
                 override fun onFailure(call: Call<JsonObject>, t: Throwable) {
 
                     FaceMatchClient.stopWebServiceCountdownTimer()
 
-                    callback.onFaceMatchError("Unable to match faces")
+                    callback.onFaceMatchError("Unable to match faces: ${t.message}")
+
+                    match_button.text = "Match Faces"
                 }
 
                 override fun onResponse(call: Call<JsonObject>, response: retrofit2.Response<JsonObject>) {
+
+                    match_button.text = "Match Faces"
 
                     FaceMatchClient.stopWebServiceCountdownTimer()
 

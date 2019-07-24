@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -18,8 +20,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name="com.seamfix.qrcode.CameraActivity" />
+        <activity android:name="com.seamfix.qrcode.DecodeActivity" />
 
         <!-- Download Barcode Detection Models from PlayStore upon App download -->
         <meta-data
@@ -36,7 +39,7 @@
         <activity android:name="com.seamfix.qrcode.EncodeActivity" />
 
         <provider
-            android:name="android.support.v4.content.FileProvider"
+            android:name="androidx.core.content.FileProvider"
             android:authorities="com.seamfix.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
@@ -45,7 +48,7 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <activity android:name="com.seamfix.qrcode.DecodedActivity"></activity>
+        <activity android:name="com.seamfix.qrcode.ResultActivity"></activity>
     </application>
 
 </manifest>

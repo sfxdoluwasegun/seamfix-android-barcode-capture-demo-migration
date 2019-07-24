@@ -7,8 +7,8 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.support.v4.content.FileProvider
-import android.support.v7.app.AppCompatActivity
+import androidx.core.content.FileProvider
+import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.*
@@ -29,15 +29,15 @@ class EncodeActivity : AppCompatActivity() {
     }
 
     private lateinit var imageFile: File
-    private lateinit var finalBitmap: Bitmap
-    private lateinit var imageView: ImageView
+    private lateinit var compressedCapturedImage: Bitmap
+    private lateinit var capturedImageImageView: ImageView
     private lateinit var faceDetector: FirebaseVisionFaceDetector
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_encode)
 
-        imageView = findViewById(R.id.image)
+        capturedImageImageView = findViewById(R.id.image)
         val qrCodeImageView = findViewById<ImageView>(R.id.qrcode_bitmap)
         val captureTextview = findViewById<TextView>(R.id.capture_button)
         val encodeButton = findViewById<Button>(R.id.encode_button)
@@ -59,12 +59,11 @@ class EncodeActivity : AppCompatActivity() {
             }
 
             // Convert Bitmap to Bas64
-            val face = finalBitmap.toBase64(20)
-
-            listOfCredentials.add(face)
+            listOfCredentials.add(compressedCapturedImage.toBase64(100))
+            Log.e(EncodeActivity::class.java.simpleName, "Base64: ${compressedCapturedImage.toBase64(100).length}")
 
             val fullCredentials = listOfCredentials.joinToString(" ", "", "")
-            Log.e(EncodeActivity::class.java.simpleName, "${fullCredentials.length}")
+            Log.e(EncodeActivity::class.java.simpleName, "Full Credentials: ${fullCredentials.length}")
 
             val qrCode = QRCode.from(fullCredentials)
                 .to(ImageType.PNG)
@@ -101,30 +100,31 @@ class EncodeActivity : AppCompatActivity() {
     }
 
     /**
-     * This method, is used to detect a Face in a picture and crop out the Face as well as resize it
-     * @param face to detect and crop
+     * This method, is used to detect a Face in a picture and crop out the Face as well as compress resize it
+     * @param capturedImage to detect and crop
      */
-    private fun detectFace(face: Bitmap) {
+    private fun detectFace(capturedImage: Bitmap) {
 
         // Show progress bar and disable encode button
         progressBar.visibility = View.VISIBLE
         encode_button.isEnabled = false
 
         /* Run a Face detection operation on the fireBaseVisionImage, the compress, crop and resize the detected Face*/
-        val fireBaseVisionImage = FirebaseVisionImage.fromBitmap(face)
+        val fireBaseVisionImage = FirebaseVisionImage.fromBitmap(capturedImage)
         val task = faceDetector.detectInImage(fireBaseVisionImage)
         Thread {
-            val result = Tasks.await(task)
-            if (result.size > 0) {
-                finalBitmap = face.compress(50)
-                    .cropDetectedFace(result[0])
-                    .resize(120)
+            val firebaseVisionFaces = Tasks.await(task)
+            val firebaseVisionFace = firebaseVisionFaces[0]
+            if (firebaseVisionFaces.isNotEmpty()) {
+                compressedCapturedImage = capturedImage.compress(100)
+                    .crop(firebaseVisionFace)
+                    .resize(240)
 
-                // Hide progress bar, enable encode button and set compressed Bitmap on the Image view
+                // Hide progress bar, enable encode button and set compressedCapturedImage on the Image view
                 runOnUiThread {
                     progressBar.visibility = View.INVISIBLE
                     encode_button.isEnabled = true
-                    imageView.setImageBitmap(finalBitmap)
+                    capturedImageImageView.setImageBitmap(compressedCapturedImage)
                 }
             }
         }.start()

@@ -7,6 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.Retrofit
 import okhttp3.OkHttpClient
 import com.seamfix.qrcode.callbacks.WebServiceCallback
+import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
 
 /**
@@ -31,13 +32,18 @@ class FaceMatchClient {
 
             if (RETROFIT_INSTANCE == null) {
 
+                val logging = HttpLoggingInterceptor()
+                logging.level = HttpLoggingInterceptor.Level.BASIC
+
                 val client = OkHttpClient.Builder()
-                    .readTimeout(60, TimeUnit.SECONDS)
-                    .connectTimeout(60, TimeUnit.SECONDS)
+                    .readTimeout(1, TimeUnit.MINUTES)
+                    .connectTimeout(1, TimeUnit.MINUTES)
+                    .writeTimeout(1, TimeUnit.MINUTES)
+                    .addInterceptor(logging)
                     .build()
 
                 RETROFIT_INSTANCE = Retrofit.Builder()
-                    .baseUrl("http://localhost")
+                    .baseUrl("http://logs.seamfix.com:9293/pred_client/")
                     .client(client)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()

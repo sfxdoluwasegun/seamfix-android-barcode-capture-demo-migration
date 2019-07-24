@@ -15,7 +15,7 @@ import retrofit2.http.*
 interface FaceMatchService {
 
     @Headers("Content-Type: application/json")
-    @POST
-    fun matchFace(@Header("X-API-KEY") key: String, @Url path: String, @Body face: JsonObject): Call<JsonObject>
+    @POST("imagepred")
+    fun matchFace(@Header("X-API-KEY") key: String, @Body face: JsonObject): Call<JsonObject>
 
 }

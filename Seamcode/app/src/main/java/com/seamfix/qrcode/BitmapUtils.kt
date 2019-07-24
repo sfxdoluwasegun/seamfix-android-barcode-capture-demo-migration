@@ -51,7 +51,7 @@ fun Bitmap.rotate(imageFile: File): Bitmap {
  * @param fireBaseVisionFace containing the bounding box of a detected faces
  * @return croppedFace
  */
-fun Bitmap.cropDetectedFace(fireBaseVisionFace: FirebaseVisionFace): Bitmap {
+fun Bitmap.crop(fireBaseVisionFace: FirebaseVisionFace): Bitmap {
     val boundingBox = fireBaseVisionFace.boundingBox
     val croppedFace = Bitmap.createBitmap(boundingBox.width(), boundingBox.height(), Bitmap.Config.ARGB_8888)
     val canvas = Canvas(croppedFace)
