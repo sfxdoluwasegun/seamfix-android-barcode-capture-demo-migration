@@ -10,7 +10,6 @@ import android.provider.MediaStore
 import androidx.core.content.FileProvider
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
-import android.view.View
 import android.widget.*
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.ml.vision.FirebaseVision
@@ -38,25 +37,21 @@ class EncodeActivity : AppCompatActivity() {
         setContentView(R.layout.activity_encode)
 
         capturedImageImageView = findViewById(R.id.image)
+        val bioEditTextView = findViewById<EditText>(R.id.bio_editText)
         val qrCodeImageView = findViewById<ImageView>(R.id.qrcode_bitmap)
-        val captureTextview = findViewById<TextView>(R.id.capture_button)
+        val captureTextView = findViewById<TextView>(R.id.capture_button)
         val encodeButton = findViewById<Button>(R.id.encode_button)
 
-        captureTextview.setOnClickListener {
+        captureTextView.setOnClickListener {
             captureFace()
         }
 
         encodeButton.setOnClickListener {
 
             // Get Users Credentials
-            val viewCount = parent_layout.childCount
             val listOfCredentials = mutableListOf<String>()
-            for (position in 0..viewCount) {
-                val view = parent_layout.getChildAt(position)
-                if (view is EditText) {
-                    listOfCredentials.add(view.text.toString())
-                }
-            }
+            val bioData = bioEditTextView.text.toString().split(Regex.fromLiteral("\n"))
+            listOfCredentials.addAll(bioData)
 
             // Convert Bitmap to Bas64
             listOfCredentials.add(compressedCapturedImage.toBase64(100))
@@ -72,7 +67,7 @@ class EncodeActivity : AppCompatActivity() {
 
             qrCodeImageView.setImageBitmap(qrCode)
 
-            qrCode.addPhotoToGallery(this, firstname_editText.text.toString())
+            qrCode.addPhotoToGallery(this, bio_editText.text.toString())
 
             Toast.makeText(this, "QR CODE SAVED", Toast.LENGTH_LONG).show()
 
@@ -106,7 +101,7 @@ class EncodeActivity : AppCompatActivity() {
     private fun detectFace(capturedImage: Bitmap) {
 
         // Show progress bar and disable encode button
-        progressBar.visibility = View.VISIBLE
+        capture_button.text = "PROCESSING"
         encode_button.isEnabled = false
 
         /* Run a Face detection operation on the fireBaseVisionImage, the compress, crop and resize the detected Face*/
@@ -122,7 +117,7 @@ class EncodeActivity : AppCompatActivity() {
 
                 // Hide progress bar, enable encode button and set compressedCapturedImage on the Image view
                 runOnUiThread {
-                    progressBar.visibility = View.INVISIBLE
+                    encode_button.text = "CAPTURE"
                     encode_button.isEnabled = true
                     capturedImageImageView.setImageBitmap(compressedCapturedImage)
                 }

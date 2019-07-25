@@ -37,7 +37,7 @@ class DecodeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_camera)
+        setContentView(R.layout.activity_decode)
 
         // Obtain instance of Camera, and set it's LifeCycle owner i.e When the DecodeActivity, is destroyed, the Camera is also destroyed
         val camera = findViewById<CameraView>(R.id.camera)

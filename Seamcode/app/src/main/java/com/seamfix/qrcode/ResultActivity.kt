@@ -15,7 +15,7 @@ import com.seamfix.qrcode.callbacks.FaceMatchCallback
 import com.seamfix.qrcode.rest.FaceMatchClient
 import com.seamfix.qrcode.rest.FaceMatchService
 import com.seamfix.seamcode.R
-import kotlinx.android.synthetic.main.activity_decoded.*
+import kotlinx.android.synthetic.main.activity_result.*
 import retrofit2.Call
 import retrofit2.Callback
 import java.io.File
@@ -24,7 +24,6 @@ class ResultActivity : AppCompatActivity() {
 
     companion object {
         private const val CAMERA_REQUEST_CODE = 100
-        private const val FACE_MATCH_ENGINE_API_URL = "http://logs.seamfix.com:9293/pred_client/imagepred"
         private const val FACE_MATCH_ENGINE_API_KEY =
             "MOPTihS-DQkfDCNjMCzBM50QgZNC5giTU9apdw1Wr1kGWAm_Q43OzXn31NN5vHCHuR67hWwO3WRrRihxAr-V6w"
     }
@@ -38,7 +37,7 @@ class ResultActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_decoded)
+        setContentView(R.layout.activity_result)
 
         val rawValue = intent.getStringExtra("value")
         val rawValues = rawValue.split(" ")
