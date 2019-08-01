@@ -9,7 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import android.util.SparseIntArray
 import android.view.Surface
@@ -23,7 +23,7 @@ import com.otaliastudios.cameraview.Gesture
 import com.otaliastudios.cameraview.GestureAction
 import com.seamfix.seamcode.R
 
-class CameraActivity : AppCompatActivity() {
+class DecodeActivity : AppCompatActivity() {
 
     companion object {
         private const val REAR_CAMERA_ID = 1
@@ -37,9 +37,9 @@ class CameraActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_camera)
+        setContentView(R.layout.activity_decode)
 
-        // Obtain instance of Camera, and set it's LifeCycle owner i.e When the CameraActivity, is destroyed, the Camera is also destroyed
+        // Obtain instance of Camera, and set it's LifeCycle owner i.e When the DecodeActivity, is destroyed, the Camera is also destroyed
         val camera = findViewById<CameraView>(R.id.camera)
         camera.setLifecycleOwner(this)
         camera.mapGesture(Gesture.TAP, GestureAction.FOCUS) // Enable tap to focus Camera
@@ -62,40 +62,48 @@ class CameraActivity : AppCompatActivity() {
         // Attach a listener for incoming Frames from the Camera source
         var hasDetectedBarcode = false
         camera.addFrameProcessor { frame ->
-            val data = frame.data
-            val rotation = frame.rotation
-            val time = frame.time
-            val size = frame.size
 
-            // Generate Metadata
-            val metaData = getFirebaseVisionImageMetaData(size.width, size.height, adjustedRotation)
+            try {
+               // val frozenFrame = frame.freeze()
 
-            // Generate Image from metadata
-            val image = FirebaseVisionImage.fromByteArray(data, metaData)
+                val data = frame.data
+                val size = frame.size
 
-            // Run detection
-            val task = detector.detectInImage(image)
+                // Generate Metadata
+                val metaData = getFirebaseVisionImageMetaData(size.width, size.height, adjustedRotation)
 
-            task.addOnSuccessListener { barcodes ->
+                // Generate Image from metadata
+                val image = FirebaseVisionImage.fromByteArray(data, metaData)
 
-                if (barcodes.isNotEmpty()) {
+                // Run detection
+                val task = detector.detectInImage(image)
 
-                    if (hasDetectedBarcode.not()) {
+                //frozenFrame.release()
 
-                        vibrate()
+                task.addOnSuccessListener(this) { barcodes ->
 
-                        val rawValue = barcodes[0].rawValue
-                        Intent(this, DecodedActivity::class.java).also { intent ->
-                            intent.putExtra("value", rawValue)
-                            startActivity(intent)
+                    if (barcodes.isNotEmpty()) {
+
+                        if (hasDetectedBarcode.not()) {
+
+                            vibrate()
+
+                            val rawValue = barcodes[0].rawValue
+                            Intent(this, ResultActivity::class.java).also { intent ->
+                                intent.putExtra("value", rawValue)
+                                startActivity(intent)
+                            }
+
+                            finish()
+
+                            hasDetectedBarcode = true
                         }
-
-                        finish()
-
-                        hasDetectedBarcode = true
                     }
                 }
+            } catch (ex: NullPointerException) {
+                // Do nothing
             }
+
         }
     }
 
@@ -156,7 +164,7 @@ class CameraActivity : AppCompatActivity() {
                 270 -> FirebaseVisionImageMetadata.ROTATION_270
                 else -> {
                     FirebaseVisionImageMetadata.ROTATION_0
-                    Log.e(CameraActivity::class.simpleName, "Bad rotation value: $rotationCompensation")
+                    Log.e(DecodeActivity::class.simpleName, "Bad rotation value: $rotationCompensation")
                 }
             }
         }

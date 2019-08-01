@@ -7,9 +7,9 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.support.v4.content.FileProvider
-import android.support.v7.app.AppCompatActivity
-import android.view.View
+import androidx.core.content.FileProvider
+import androidx.appcompat.app.AppCompatActivity
+import android.util.Log
 import android.widget.*
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.ml.vision.FirebaseVision
@@ -28,50 +28,46 @@ class EncodeActivity : AppCompatActivity() {
     }
 
     private lateinit var imageFile: File
-    private lateinit var finalBitmap: Bitmap
-    private lateinit var imageView: ImageView
+    private lateinit var compressedCapturedImage: Bitmap
+    private lateinit var capturedImageImageView: ImageView
     private lateinit var faceDetector: FirebaseVisionFaceDetector
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_encode)
 
-        imageView = findViewById(R.id.image)
+        capturedImageImageView = findViewById(R.id.image)
+        val bioEditTextView = findViewById<EditText>(R.id.bio_editText)
         val qrCodeImageView = findViewById<ImageView>(R.id.qrcode_bitmap)
-        val captureTextview = findViewById<TextView>(R.id.capture_button)
+        val captureTextView = findViewById<TextView>(R.id.capture_button)
         val encodeButton = findViewById<Button>(R.id.encode_button)
 
-        captureTextview.setOnClickListener {
+        captureTextView.setOnClickListener {
             captureFace()
         }
 
         encodeButton.setOnClickListener {
 
             // Get Users Credentials
-            val viewCount = parent_layout.childCount
             val listOfCredentials = mutableListOf<String>()
-            for (position in 0..viewCount) {
-                val view = parent_layout.getChildAt(position)
-                if (view is EditText) {
-                    listOfCredentials.add(view.text.toString())
-                }
-            }
+            val bioData = bioEditTextView.text.toString().split(Regex.fromLiteral("\n"))
+            listOfCredentials.addAll(bioData)
 
             // Convert Bitmap to Bas64
-            val face = finalBitmap.toBase64(20)
+            listOfCredentials.add(compressedCapturedImage.toBase64(100))
+            Log.e(EncodeActivity::class.java.simpleName, "Base64: ${compressedCapturedImage.toBase64(100).length}")
 
-            listOfCredentials.add(face)
             val fullCredentials = listOfCredentials.joinToString(" ", "", "")
-            Toast.makeText(this, "${fullCredentials.length}", Toast.LENGTH_LONG).show()
+            Log.e(EncodeActivity::class.java.simpleName, "Full Credentials: ${fullCredentials.length}")
 
             val qrCode = QRCode.from(fullCredentials)
                 .to(ImageType.PNG)
                 .withSize(400, 400)
                 .bitmap()
 
-            qrCode.addPhotoToGallery(this, firstname_editText.text.toString())
-
             qrCodeImageView.setImageBitmap(qrCode)
+
+            qrCode.addPhotoToGallery(this, bio_editText.text.toString())
 
             Toast.makeText(this, "QR CODE SAVED", Toast.LENGTH_LONG).show()
 
@@ -99,30 +95,31 @@ class EncodeActivity : AppCompatActivity() {
     }
 
     /**
-     * This method, is used to detect a Face in a picture and crop out the Face as well as resize it
-     * @param face to detect and crop
+     * This method, is used to detect a Face in a picture and crop out the Face as well as compress resize it
+     * @param capturedImage to detect and crop
      */
-    private fun detectFace(face: Bitmap) {
+    private fun detectFace(capturedImage: Bitmap) {
 
         // Show progress bar and disable encode button
-        progressBar.visibility = View.VISIBLE
+        capture_button.text = "PROCESSING"
         encode_button.isEnabled = false
 
         /* Run a Face detection operation on the fireBaseVisionImage, the compress, crop and resize the detected Face*/
-        val fireBaseVisionImage = FirebaseVisionImage.fromBitmap(face)
+        val fireBaseVisionImage = FirebaseVisionImage.fromBitmap(capturedImage)
         val task = faceDetector.detectInImage(fireBaseVisionImage)
         Thread {
-            val result = Tasks.await(task)
-            if (result.size > 0) {
-                finalBitmap = face.compress(50)
-                    .cropDetectedFace(result[0])
-                    .resize(120)
+            val firebaseVisionFaces = Tasks.await(task)
+            val firebaseVisionFace = firebaseVisionFaces[0]
+            if (firebaseVisionFaces.isNotEmpty()) {
+                compressedCapturedImage = capturedImage.compress(100)
+                    .crop(firebaseVisionFace)
+                    .resize(240)
 
-                // Hide progress bar, enable encode button and set compressed Bitmap on the Image view
+                // Hide progress bar, enable encode button and set compressedCapturedImage on the Image view
                 runOnUiThread {
-                    progressBar.visibility = View.INVISIBLE
+                    encode_button.text = "CAPTURE"
                     encode_button.isEnabled = true
-                    imageView.setImageBitmap(finalBitmap)
+                    capturedImageImageView.setImageBitmap(compressedCapturedImage)
                 }
             }
         }.start()
