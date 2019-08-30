@@ -68,7 +68,7 @@ class EncodeActivity : AppCompatActivity() {
 
             val qrCode = QRCode.from(fullCredentials)
                 .to(ImageType.PNG)
-                .withSize(120, 120)
+                .withSize(190, 190)
                 .bitmap()
 
             qrCodeImageView.setImageBitmap(qrCode)
@@ -124,7 +124,7 @@ class EncodeActivity : AppCompatActivity() {
 
                 // Hide progress bar, enable encode button and set compressedCapturedImage on the Image view
                 runOnUiThread {
-                    encode_button.text = "CAPTURE"
+                    capture_button.text = "CAPTURE"
                     encode_button.isEnabled = true
                     capturedImageImageView.setImageBitmap(compressedCapturedImage)
                 }
