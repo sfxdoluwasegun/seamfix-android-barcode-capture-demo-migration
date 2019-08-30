@@ -12,11 +12,6 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 
-
-/**
- * This method, is used to compress a Bitmap
- * @param quality of the Bitmap compression
- */
 fun Bitmap.compress(quality: Int): Bitmap {
     val bmpStream = ByteArrayOutputStream()
     this.compress(Bitmap.CompressFormat.JPEG, quality, bmpStream)

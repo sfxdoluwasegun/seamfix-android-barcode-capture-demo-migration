@@ -7,10 +7,10 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import androidx.core.content.FileProvider
-import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
@@ -32,6 +32,7 @@ class EncodeActivity : AppCompatActivity() {
     private lateinit var capturedImageImageView: ImageView
     private lateinit var faceDetector: FirebaseVisionFaceDetector
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_encode)
@@ -50,19 +51,24 @@ class EncodeActivity : AppCompatActivity() {
 
             // Get Users Credentials
             val listOfCredentials = mutableListOf<String>()
-            val bioData = bioEditTextView.text.toString().split(Regex.fromLiteral("\n"))
-            listOfCredentials.addAll(bioData)
 
-            // Convert Bitmap to Bas64
-            listOfCredentials.add(compressedCapturedImage.toBase64(100))
-            Log.e(EncodeActivity::class.java.simpleName, "Base64: ${compressedCapturedImage.toBase64(100).length}")
+            val bioData = bioEditTextView.text.toString().split(Regex.fromLiteral("\n"))
+
+            Toast.makeText(applicationContext, "Bio Data: ${bioData.joinToString(" ", "", "")}", Toast.LENGTH_LONG)
+                .show()
+
+            listOfCredentials.addAll(bioData)
+            listOfCredentials.add(compressedCapturedImage.toBase64(10))
+
+            Toast.makeText(applicationContext, "Face: ${compressedCapturedImage.toBase64(10).length}", Toast.LENGTH_LONG).show()
 
             val fullCredentials = listOfCredentials.joinToString(" ", "", "")
-            Log.e(EncodeActivity::class.java.simpleName, "Full Credentials: ${fullCredentials.length}")
+
+            Toast.makeText(applicationContext, "Full Credentials: ${fullCredentials.length}", Toast.LENGTH_LONG).show()
 
             val qrCode = QRCode.from(fullCredentials)
                 .to(ImageType.PNG)
-                .withSize(400, 400)
+                .withSize(120, 120)
                 .bitmap()
 
             qrCodeImageView.setImageBitmap(qrCode)
@@ -111,9 +117,10 @@ class EncodeActivity : AppCompatActivity() {
             val firebaseVisionFaces = Tasks.await(task)
             val firebaseVisionFace = firebaseVisionFaces[0]
             if (firebaseVisionFaces.isNotEmpty()) {
-                compressedCapturedImage = capturedImage.compress(100)
+                compressedCapturedImage = capturedImage
+                    .compress(10)
                     .crop(firebaseVisionFace)
-                    .resize(240)
+                    .resize(224)
 
                 // Hide progress bar, enable encode button and set compressedCapturedImage on the Image view
                 runOnUiThread {
@@ -122,6 +129,7 @@ class EncodeActivity : AppCompatActivity() {
                     capturedImageImageView.setImageBitmap(compressedCapturedImage)
                 }
             }
+
         }.start()
     }
 
