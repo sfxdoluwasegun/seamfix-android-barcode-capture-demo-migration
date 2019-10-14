@@ -19,9 +19,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name="com.seamfix.qrcode.CameraActivity" />
+<!--        <activity android:name="com.seamfix.qrcode.HomeActivity">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
 
-        <!-- Download Barcode Detection Models from PlayStore upon App download -->
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
+        <activity android:name="com.seamfix.qrcode.CameraActivity" /> <!-- Download Barcode Detection Models from PlayStore upon App download -->
         <meta-data
             android:name="com.google.firebase.ml.vision.DEPENDENCIES"
             android:value="barcode | face" />
@@ -45,7 +50,7 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <activity android:name="com.seamfix.qrcode.DecodedActivity"></activity>
+        <activity android:name="com.seamfix.qrcode.DecodedActivity" />
         <activity android:name="com.seamfix.qrcode.MainActivity" />
     </application>
 
