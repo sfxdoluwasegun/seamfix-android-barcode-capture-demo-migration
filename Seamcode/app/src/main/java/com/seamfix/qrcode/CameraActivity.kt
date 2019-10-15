@@ -13,6 +13,8 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.util.SparseIntArray
 import android.view.Surface
+import android.view.WindowManager
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.ml.vision.FirebaseVision
@@ -31,13 +33,13 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private lateinit var detector: FirebaseVisionBarcodeDetector
-
     // Vibrator and Vibrator Effect (devices running Oreo and above)
     private lateinit var vibrator: Vibrator
     private lateinit var vibratorEffect: VibrationEffect
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
         setContentView(R.layout.activity_camera)
 
         // Obtain instance of Camera, and set it's LifeCycle owner i.e When the CameraActivity, is destroyed, the Camera is also destroyed
@@ -64,8 +66,6 @@ class CameraActivity : AppCompatActivity() {
         var hasDetectedBarcode = false
         camera.addFrameProcessor { frame ->
             val data = frame.data
-            val rotation = frame.rotation
-            val time = frame.time
             val size = frame.size
 
             // Generate Metadata
@@ -81,19 +81,20 @@ class CameraActivity : AppCompatActivity() {
             val result = Tasks.await(task)
             val barcode = result.firstOrNull()
             barcode?.let {
-
                 if (hasDetectedBarcode.not()) {
-
                     vibrate()
-
                     val rawValue = barcode.rawValue
-                    Intent(this, DecodedActivity::class.java).also { intent ->
-                        intent.putExtra("value", rawValue)
-                        startActivity(intent)
+                    val qrData = FingerQrCode.getDecodeQrData(rawValue)
+                    if(qrData != null){
+                        Intent(this, FingerprintQrMatcherActivity::class.java).also { intent ->
+                            intent.putExtra("value", rawValue)
+                            startActivity(intent)
+                        }
+                    }else{
+                        Toast.makeText(this, "Unrecognised data format", Toast.LENGTH_SHORT).show()
                     }
 
                     hasDetectedBarcode = true
-
                     finish()
                 }
             }
@@ -119,8 +120,7 @@ class CameraActivity : AppCompatActivity() {
     }
 
     inner class FirebaseBarcodeDetector {
-
-        private val ORIENTATIONS_TABLE = SparseIntArray().apply {
+        private var orientations = SparseIntArray().apply {
             append(Surface.ROTATION_0, 90)
             append(Surface.ROTATION_90, 0)
             append(Surface.ROTATION_180, 270)
@@ -138,7 +138,7 @@ class CameraActivity : AppCompatActivity() {
             // Then, from the ORIENTATIONS_TABLE table, look up the angle the image must be
             // rotated to compensate for the device's rotation.
             val deviceRotation = activity.windowManager.defaultDisplay.rotation
-            var rotationCompensation = ORIENTATIONS_TABLE[deviceRotation]
+            var rotationCompensation = orientations[deviceRotation]
 
             // On most devices, the sensor orientation is 90 degrees, but for some
             // devices it is 270 degrees. For devices with a sensor orientation of
@@ -151,8 +151,8 @@ class CameraActivity : AppCompatActivity() {
 
             // Return the corresponding FirebaseVisionImageMetadata rotation value.
             return when (rotationCompensation) {
-                0 -> FirebaseVisionImageMetadata.ROTATION_0
-                90 -> FirebaseVisionImageMetadata.ROTATION_90
+                0   -> FirebaseVisionImageMetadata.ROTATION_0
+                90  -> FirebaseVisionImageMetadata.ROTATION_90
                 180 -> FirebaseVisionImageMetadata.ROTATION_180
                 270 -> FirebaseVisionImageMetadata.ROTATION_270
                 else -> {

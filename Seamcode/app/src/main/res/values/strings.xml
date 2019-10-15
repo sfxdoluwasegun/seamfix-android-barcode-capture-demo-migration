@@ -4,4 +4,7 @@
     <string name="text_match_face">Match face</string>
     <string name="text_match_finger">Match Finger</string>
     <string name="text_back_image">Back image</string>
+    <string name="ok">Ok</string>
+    <string name="text_match_not_found">Match not found</string>
+    <string name="text_match_found">Match found</string>
 </resources>

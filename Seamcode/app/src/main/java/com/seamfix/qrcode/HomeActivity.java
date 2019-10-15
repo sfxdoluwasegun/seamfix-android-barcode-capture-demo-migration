@@ -1,5 +1,6 @@
 package com.seamfix.qrcode;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Window;
@@ -25,7 +26,8 @@ public class HomeActivity extends AppCompatActivity {
         });
 
         matchFinger.setOnClickListener(v -> {
-
+            Intent intent = new Intent(HomeActivity.this, CameraActivity.class);
+            startActivity(intent);
         });
     }
 }

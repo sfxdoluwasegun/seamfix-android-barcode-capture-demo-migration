@@ -23,6 +23,7 @@ import com.machinezoo.sourceafis.FingerprintMatcher;
 import com.machinezoo.sourceafis.FingerprintTemplate;
 import com.seamfix.sdk.fingerprint.FingerCaptureOption;
 import com.seamfix.sdk.fingerprint.FingerPrintCaptureResult;
+import com.seamfix.sdk.fingerprint.FingerTypes;
 import com.seamfix.sdk.fingerprint.SingleFingerCaptureView;
 import com.seamfix.sdk.fingerprint.SkipReasonData;
 import com.seamfix.sdk.fingerprint.slap.SlapCaptureResult;
@@ -66,53 +67,7 @@ public class TestSingleFingerActivity extends AppCompatActivity {
         singleFingerCaptureView.init(this, option, new SingleFingerCaptureView.SingleCaptureListener() {
             @Override
             public void onSingleCaptureFinished(FingerPrintCaptureResult result) {
-                FingerprintTemplate probe = new FingerprintTemplate().dpi(500).create(result.getWsqData());
-                String probeSerial = probe.serialize();
-                Log.e("LENGTH", "DATA OF SERIALIZED: "+ probeSerial);
-                Log.e("LENGTH", "LENGTH OF SERIALIZED"+ probeSerial.length());
-
-                byte[] isoTemp = FingerprintCompatibility.toAnsiIncits378v2009(probe);
-                String base64 = Base64.encodeToString(isoTemp, Base64.NO_WRAP);
-
-                Log.e("LENGTH", "RAW LENGTH OF ISO: "+ isoTemp.length);
-                Log.e("LENGTH", "DATA OF ISO: "+ base64);
-                Log.e("LENGTH", "LENGTH OF ISO :" + base64.length());
-
-
-                QRCode code = QRCode.from(base64);
-                code.to(ImageType.PNG);
-                code.withSize(400, 400);
-                Bitmap qrImage  = code.bitmap();
-
-                int[] intArray = new int[qrImage.getWidth() * qrImage.getHeight()];
-                qrImage.getPixels(intArray, 0, qrImage.getWidth(), 0, 0, qrImage.getWidth(),qrImage.getHeight());
-                LuminanceSource source = new RGBLuminanceSource(qrImage.getWidth(), qrImage.getHeight(), intArray);
-                BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
-                Reader reader = new MultiFormatReader();
-
-                byte[] decodedIsoTemp;
-                try {
-                    Result mResult = reader.decode(bitmap);
-                    String text = mResult.getText();
-                    decodedIsoTemp = Base64.decode(text, Base64.NO_WRAP);
-                } catch (NotFoundException | ChecksumException | FormatException e) {
-                    e.printStackTrace();
-                    Toast.makeText(TestSingleFingerActivity.this, "" + e.getMessage(), Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-
-                if(candidate == null) {
-                    candidate = FingerprintCompatibility.convert(decodedIsoTemp);
-                    String candidateSerial = candidate.serialize();
-                    Log.e("LENGTH", "DATA OF SERIALIZED: " + candidateSerial);
-                }
-
-                double score = new FingerprintMatcher().index(probe).match(candidate);
-                Log.e("SCORE", "MATCH SCORE: "+ score);
-                Toast.makeText(TestSingleFingerActivity.this, ""+score, Toast.LENGTH_LONG).show();
-
-
+                performEncoder(result);
             }
 
             @Override
@@ -135,5 +90,60 @@ public class TestSingleFingerActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+
+    private void performEncoder(FingerPrintCaptureResult result){
+        Bitmap bitmap  = FingerQrCode.encodeWsqTemplate(result.getWsqData(), FingerTypes.RIGHT_THUMB.getValue());
+        Log.e("BITMAP", bitmap.toString());
+    }
+
+
+    private void endToEndRaw(FingerPrintCaptureResult result){
+        FingerprintTemplate probe = new FingerprintTemplate().dpi(500).create(result.getWsqData());
+        String probeSerial = probe.serialize();
+        Log.e("LENGTH", "DATA OF SERIALIZED: "+ probeSerial);
+        Log.e("LENGTH", "LENGTH OF SERIALIZED"+ probeSerial.length());
+
+        byte[] isoTemp = FingerprintCompatibility.toAnsiIncits378v2009(probe);
+        String base64 = Base64.encodeToString(isoTemp, Base64.NO_WRAP);
+
+        Log.e("LENGTH", "RAW LENGTH OF ISO: "+ isoTemp.length);
+        Log.e("LENGTH", "DATA OF ISO: "+ base64);
+        Log.e("LENGTH", "LENGTH OF ISO :" + base64.length());
+
+
+        QRCode code = QRCode.from(base64);
+        code.to(ImageType.PNG);
+        code.withSize(400, 400);
+        Bitmap qrImage  = code.bitmap();
+
+        int[] intArray = new int[qrImage.getWidth() * qrImage.getHeight()];
+        qrImage.getPixels(intArray, 0, qrImage.getWidth(), 0, 0, qrImage.getWidth(),qrImage.getHeight());
+        LuminanceSource source = new RGBLuminanceSource(qrImage.getWidth(), qrImage.getHeight(), intArray);
+        BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+        Reader reader = new MultiFormatReader();
+
+        byte[] decodedIsoTemp;
+        try {
+            Result mResult = reader.decode(bitmap);
+            String text = mResult.getText();
+            decodedIsoTemp = Base64.decode(text, Base64.NO_WRAP);
+        } catch (NotFoundException | ChecksumException | FormatException e) {
+            e.printStackTrace();
+            Toast.makeText(TestSingleFingerActivity.this, "" + e.getMessage(), Toast.LENGTH_LONG).show();
+            return;
+        }
+
+
+        if(candidate == null) {
+            candidate = FingerprintCompatibility.convert(decodedIsoTemp);
+            String candidateSerial = candidate.serialize();
+            Log.e("LENGTH", "DATA OF SERIALIZED: " + candidateSerial);
+        }
+
+        double score = new FingerprintMatcher().index(probe).match(candidate);
+        Log.e("SCORE", "MATCH SCORE: "+ score);
+        Toast.makeText(TestSingleFingerActivity.this, ""+score, Toast.LENGTH_LONG).show();
     }
 }
