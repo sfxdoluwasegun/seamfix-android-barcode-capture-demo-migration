@@ -41,6 +41,7 @@ public class FingerprintQrMatcherActivity extends AppCompatActivity {
         if(qrData!= null){
             decodedIsoTemplate = qrData.getD();
             fingerName = qrData.getN();
+            fingerName = fingerName.toUpperCase().replaceAll(" ","_");
         }
 
         if(decodedIsoTemplate != null) {

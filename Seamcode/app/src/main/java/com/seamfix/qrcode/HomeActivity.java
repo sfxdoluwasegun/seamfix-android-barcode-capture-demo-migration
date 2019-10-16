@@ -19,11 +19,6 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
 
         Button matchFinger = findViewById(R.id.id_match_finger);
-        Button matchFace   =  findViewById(R.id.id_match_face);
-
-        matchFace.setOnClickListener(v -> {
-
-        });
 
         matchFinger.setOnClickListener(v -> {
             Intent intent = new Intent(HomeActivity.this, CameraActivity.class);

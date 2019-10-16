@@ -20,7 +20,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name="com.seamfix.qrcode.HomeActivity">
+        <activity android:name="com.seamfix.qrcode.HomeActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -39,7 +41,9 @@
 <!--                <category android:name="android.intent.category.LAUNCHER" />-->
 <!--            </intent-filter>-->
 <!--        </activity>-->
-        <activity android:name="com.seamfix.qrcode.EncodeActivity" />
+        <activity android:name="com.seamfix.qrcode.EncodeActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="portrait"/>
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -53,7 +57,9 @@
 
         <activity android:name="com.seamfix.qrcode.DecodedActivity" />
         <activity android:name="com.seamfix.qrcode.MainActivity" />
-        <activity android:name="com.seamfix.qrcode.FingerprintQrMatcherActivity" />
+        <activity android:name="com.seamfix.qrcode.FingerprintQrMatcherActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

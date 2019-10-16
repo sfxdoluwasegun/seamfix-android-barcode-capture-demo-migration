@@ -4,7 +4,9 @@
     <string name="text_match_face">Match face</string>
     <string name="text_match_finger">Match Finger</string>
     <string name="text_back_image">Back image</string>
-    <string name="ok">Ok</string>
-    <string name="text_match_not_found">Match not found</string>
-    <string name="text_match_found">Match found</string>
+    <string name="ok">OK</string>
+    <string name="text_match_not_found">Fingerprint did not match</string>
+    <string name="text_match_found">Fingerprint matched</string>
+    <string name="text_title_utme">UTME</string>
+    <string name="text_sub_title">Verification</string>
 </resources>
