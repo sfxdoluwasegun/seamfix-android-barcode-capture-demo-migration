@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
 
     <uses-feature android:name="android.hardware.camera" />
-    <uses-feature android:name="android.hardware.usb.host"/>
+    <uses-feature android:name="android.hardware.usb.host" />
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -20,7 +20,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name="com.seamfix.qrcode.HomeActivity"
+        <activity android:name="com.seamfix.qrcode.HomeActivity"></activity>
+        <activity
+            android:name="com.seamfix.qrcode.enrollment.EnrollmentCameraActivity"
             android:configChanges="keyboardHidden|screenSize|orientation"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -32,18 +34,16 @@
         <activity android:name="com.seamfix.qrcode.CameraActivity" /> <!-- Download Barcode Detection Models from PlayStore upon App download -->
         <meta-data
             android:name="com.google.firebase.ml.vision.DEPENDENCIES"
-            android:value="barcode | face" />
-
-<!--        <activity android:name="com.seamfix.qrcode.TestSingleFingerActivity">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN" />-->
-
-<!--                <category android:name="android.intent.category.LAUNCHER" />-->
-<!--            </intent-filter>-->
-<!--        </activity>-->
-        <activity android:name="com.seamfix.qrcode.EncodeActivity"
+            android:value="barcode | face" /> <!-- <activity android:name="com.seamfix.qrcode.TestSingleFingerActivity"> -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name="android.intent.action.MAIN" /> -->
+        <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+        <!-- </intent-filter> -->
+        <!-- </activity> -->
+        <activity
+            android:name="com.seamfix.qrcode.EncodeActivity"
             android:configChanges="keyboardHidden|screenSize|orientation"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -57,9 +57,13 @@
 
         <activity android:name="com.seamfix.qrcode.DecodedActivity" />
         <activity android:name="com.seamfix.qrcode.MainActivity" />
-        <activity android:name="com.seamfix.qrcode.FingerprintQrMatcherActivity"
+        <activity
+            android:name="com.seamfix.qrcode.FingerprintQrMatcherActivity"
             android:configChanges="keyboardHidden|screenSize|orientation"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
+        <activity android:name="com.seamfix.qrcode.enrollment.PreviewEnrollmentActivity" />
+        <activity android:name="com.seamfix.qrcode.enrollment.EnrollmentFingerprintActivity" />
+        <activity android:name="com.seamfix.qrcode.enrollment.FormActivity" />
     </application>
 
 </manifest>

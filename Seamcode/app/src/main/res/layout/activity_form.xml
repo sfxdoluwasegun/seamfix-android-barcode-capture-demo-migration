@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.seamfix.qrcode.enrollment.FormActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/banner"
+        android:padding="20dp"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/black"
+            android:textSize="30sp"
+            android:padding="10dp"
+            android:text="@string/text_basic_information"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="14sp"
+            android:padding="10dp"
+            android:text="@string/text_basic_detail"/>
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/banner"
+        android:layout_above="@+id/button_group">
+
+        <LinearLayout
+            android:id="@+id/form_data"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp"
+            android:orientation="vertical">
+
+            <com.seamfix.qrcode.control.FieldPane
+                android:id="@+id/field_first_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:required="true"
+                app:label="@string/text_change_password"/>
+
+            <com.seamfix.qrcode.control.FieldPane
+                android:id="@+id/field_last_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:required="true"
+                app:label="@string/text_last_name"/>
+
+            <com.seamfix.qrcode.control.FieldPane
+                android:id="@+id/field_middle_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:label="@string/text_middle_name"/>
+
+            <com.seamfix.qrcode.control.FieldPane
+                android:id="@+id/field_registration_number"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:label="@string/text_registration_number"
+                app:required="true" />
+
+            <com.seamfix.qrcode.control.FieldPane
+                android:id="@+id/field_score"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:required="true"
+                app:label="@string/text_score"
+                app:length="3"
+                app:inputType="number"/>
+
+            <RadioGroup
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/field_gender"
+                android:padding="10dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:textSize="12sp"
+                    android:text="@string/text_gender"/>
+                <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text_male"/>
+                <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text_female"/>
+            </RadioGroup>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/button_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/drawable_app_green_solid"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true">
+        <Button
+            android:id="@+id/form_next_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp"
+            android:layout_gravity="center"
+            android:text="@string/text_button_next"
+            android:drawableEnd="@drawable/ic_navigate_next_black_24dp"
+            android:background="@android:color/transparent"
+            android:textColor="@android:color/white"/>
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/color_core_transparent"
+        >
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="20dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+
+        <ImageView
+            android:id="@+id/image_preview"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:src="@drawable/ic_check_circle_black_24dp" />
+
+        <TextView
+            android:id="@+id/message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="10dp"
+            android:layout_marginBottom="20dp"
+            android:gravity="center"
+            android:text="@string/text_image_captured"
+            android:textColor="#9B9A9A"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/ok"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/drawable_app_black_round_stroked"
+            android:text="@string/ok"
+            android:textAllCaps="false"
+            android:textColor="@color/colorBlack" />
+
+        <Button
+            android:id="@+id/id_retry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="20dp"
+            android:background="@android:color/transparent"
+            android:elevation="0dp"
+            android:text="@string/retry"
+            android:textAllCaps="false"
+            android:textColor="#575757" />
+
+    </LinearLayout>
+
+
+</LinearLayout>

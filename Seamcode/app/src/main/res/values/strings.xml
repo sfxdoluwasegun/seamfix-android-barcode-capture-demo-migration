@@ -9,4 +9,23 @@
     <string name="text_match_found">Fingerprint matched</string>
     <string name="text_title_utme">UTME</string>
     <string name="text_sub_title">Verification</string>
+    <string name="text_verify_text">Verify Text</string>
+    <string name="text_verify_score">Verify Score</string>
+    <string name="text_label_sample">Middle Name</string>
+    <string name="sample_text">John</string>
+    <string name="error">error</string>
+    <string name="empty"></string>
+    <string name="text_change_password">First Name</string>
+    <string name="text_basic_information">Basic Information</string>
+    <string name="text_basic_detail">Enter basic details, fill the fields that are marked compulsory</string>
+    <string name="text_last_name">Last Name</string>
+    <string name="text_middle_name">Middle Name</string>
+    <string name="text_button_next">Next</string>
+    <string name="text_male">Male</string>
+    <string name="text_female">Female</string>
+    <string name="text_gender">Gender</string>
+    <string name="text_score">Score</string>
+    <string name="text_registration_number">Registration Number</string>
+    <string name="text_image_captured">Image Captured</string>
+    <string name="retry">Retry</string>
 </resources>
