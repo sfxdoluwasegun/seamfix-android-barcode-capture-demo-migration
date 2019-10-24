@@ -20,9 +20,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name="com.seamfix.qrcode.HomeActivity"></activity>
+        <activity android:name="com.seamfix.qrcode.enrollment.EnrollmentCameraActivity"/>
         <activity
-            android:name="com.seamfix.qrcode.enrollment.EnrollmentCameraActivity"
+            android:name="com.seamfix.qrcode.HomeActivity"
             android:configChanges="keyboardHidden|screenSize|orientation"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -64,6 +64,9 @@
         <activity android:name="com.seamfix.qrcode.enrollment.PreviewEnrollmentActivity" />
         <activity android:name="com.seamfix.qrcode.enrollment.EnrollmentFingerprintActivity" />
         <activity android:name="com.seamfix.qrcode.enrollment.FormActivity" />
+        <activity android:name="com.seamfix.qrcode.verification.VerificationCameraActivity" />
+        <activity android:name="com.seamfix.qrcode.enrollment.EnrollmentFingerTypeActivity" />
+        <activity android:name="com.seamfix.qrcode.verification.VerificationFingerprintActivity" />
     </application>
 
 </manifest>

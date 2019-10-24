@@ -49,6 +49,34 @@ public class FingerQrCode {
         return code.bitmap();
     }
 
+    public static Bitmap encodeEnrollData(EnrollmentData enrollmentData){
+        String data = gson.toJson(enrollmentData);
+        byte[]encData = Crypter.encrypt("E5572DA36352063BBBA1321799B941B8FC337E64F5B4AB15EB01B9F68FB946A1", data);
+        String encString = Base64.encodeToString(encData, Base64.NO_WRAP);
+        QRCode code = QRCode.from(encString);
+        code.to(ImageType.PNG);
+        code.withSize(400, 400);
+        return code.bitmap();
+    }
+
+    public static EnrollmentData decodeEnrollmentData(String qrData){
+        byte[] encData = Base64.decode(qrData, Base64.NO_WRAP);
+        String jsonData = Crypter.decrypt("E5572DA36352063BBBA1321799B941B8FC337E64F5B4AB15EB01B9F68FB946A1", encData);
+        return gson.fromJson(jsonData, EnrollmentData.class);
+    }
+
+
+    public static String getWsqTemplate(byte[] wsqData){
+        FingerprintTemplate probe = new FingerprintTemplate().dpi(500).create(wsqData);
+        String probeSerial = probe.serialize();
+        Log.e("LENGTH", "DATA OF SERIALIZED: "+ probeSerial);
+        Log.e("LENGTH", "LENGTH OF SERIALIZED"+ probeSerial.length());
+        byte[] isoTemp = FingerprintCompatibility.toAnsiIncits378v2009(probe);
+        return Base64.encodeToString(isoTemp, Base64.NO_WRAP);
+    }
+
+
+
     public static FingerprintTemplate decodeWsqTemplate(Bitmap qrBitmap){
         int[] intArray = new int[qrBitmap.getWidth() * qrBitmap.getHeight()];
         qrBitmap.getPixels(intArray, 0, qrBitmap.getWidth(), 0, 0, qrBitmap.getWidth(), qrBitmap.getHeight());
@@ -88,7 +116,7 @@ public class FingerQrCode {
         return -4D;
     }
 
-    static Data getDecodeQrData(String qrData){
+    public static Data getDecodeQrData(String qrData){
         byte[] encData = Base64.decode(qrData, Base64.NO_WRAP);
         String jsonData = Crypter.decrypt("E5572DA36352063BBBA1321799B941B8FC337E64F5B4AB15EB01B9F68FB946A1", encData);
         return gson.fromJson(jsonData, Data.class);

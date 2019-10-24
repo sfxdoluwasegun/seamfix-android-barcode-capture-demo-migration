@@ -67,6 +67,7 @@
                 android:id="@+id/field_registration_number"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:length="10"
                 app:label="@string/text_registration_number"
                 app:required="true" />
 
@@ -83,6 +84,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/field_gender"
+                android:visibility="gone"
                 android:padding="10dp">
                 <TextView
                     android:layout_width="wrap_content"

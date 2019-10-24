@@ -22,6 +22,19 @@ class Utils {
             }
         }
 
+
+        /**
+         * This method, Sets up the required settings by the Face Detector, using high specifications
+         * @return FirebaseVisionFaceDetectorOptions containing settings
+         */
+        fun getFaceDetectionOptions(): FirebaseVisionFaceDetectorOptions {
+            return with(FirebaseVisionFaceDetectorOptions.Builder()) {
+                setPerformanceMode(FirebaseVisionFaceDetectorOptions.FAST)
+                setLandmarkMode(FirebaseVisionFaceDetectorOptions.ALL_LANDMARKS)
+                build()
+            }
+        }
+
         /**
          * This method, is used to configure Firebase Vision Barcode Detector Options
          * @return FirebaseVisionBarcodeDetectorOptions, containing the configuration for Firebase Vision Barcode Detector

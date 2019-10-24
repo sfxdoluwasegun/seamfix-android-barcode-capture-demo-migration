@@ -75,7 +75,7 @@
             android:orientation="vertical">
 
             <Button
-                android:id="@+id/id_verify_core"
+                android:id="@+id/id_enroll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
@@ -86,7 +86,24 @@
                 android:paddingStart="35dp"
                 android:paddingEnd="35dp"
                 android:drawablePadding="20dp"
-                android:text="@string/text_verify_score"
+                android:text="@string/text_start_enrollment"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/id_verify"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_gravity="center"
+                android:background="@drawable/drawable_app_white_round_stroked"
+                android:drawableStart="@drawable/ic_account_box_black_24dp"
+                android:padding="10dp"
+                android:paddingStart="35dp"
+                android:paddingEnd="35dp"
+                android:drawablePadding="20dp"
+                android:text="@string/text_start_verify"
                 android:textAllCaps="false"
                 android:textColor="@android:color/white"
                 android:textSize="12sp" />

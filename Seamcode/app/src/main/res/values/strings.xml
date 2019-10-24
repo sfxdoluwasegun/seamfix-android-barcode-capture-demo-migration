@@ -28,4 +28,17 @@
     <string name="text_registration_number">Registration Number</string>
     <string name="text_image_captured">Image Captured</string>
     <string name="retry">Retry</string>
+    <string name="text_start_enrollment">Enroll</string>
+    <string name="message_capture">Fingerprint capture was successful. Save enrollment now or recapture fingerprint</string>
+    <string name="text_save_enrollment">Save enrollment</string>
+    <string name="text_save_enrollment_button">Save Enrollment</string>
+    <string name="text_recapture_fprint">Recapture</string>
+    <string name="text_start_verify">Verify</string>
+    <string name="text_printer_exit">Exit</string>
+    <string name="text_save">Save</string>
+    <string name="text_cancel_save">Cancel Enrollment</string>
+    <string name="text_message_exit_enrollment">You have chossen to cancel this enrollment, Is this what you really want to do?</string>
+    <string name="text_yes_cancel">Yes, cancel</string>
+    <string name="text_just_kidding">No</string>
+    <string name="text_select_print_to_capture">Select Fingerprint Type</string>
 </resources>
