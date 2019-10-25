@@ -61,7 +61,7 @@ public class PreviewEnrollmentActivity extends AppCompatActivity {
 
 
         try {
-            InputStream in = this.getAssets().open("jamb.html");
+            InputStream in = this.getAssets().open("jamb3.html");
             String html = FileUtils.getStringfromInputStream(in);
 
             String imageData = DataSession.getInstance().getTextData().get(R.layout.enrollment_activity_camera);

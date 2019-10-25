@@ -172,11 +172,11 @@ public class VerificationCameraActivity2 extends AppCompatActivity {
 
                     float m = bounds.exactCenterX();
 
-                    x[Landmark.UPPER_FACE_CENTER] = m;
-                    y[Landmark.UPPER_FACE_CENTER] = bounds.top;
+                    //x[Landmark.UPPER_FACE_CENTER] = m;
+                    //y[Landmark.UPPER_FACE_CENTER] = bounds.top;
 
-                    x[Landmark.LOWER_FACE_CENTER] = m;
-                    y[Landmark.LOWER_FACE_CENTER] = bounds.bottom;
+                    //x[Landmark.LOWER_FACE_CENTER] = m;
+                    //y[Landmark.LOWER_FACE_CENTER] = bounds.bottom;
                 }
 
 

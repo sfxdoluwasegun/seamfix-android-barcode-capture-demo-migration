@@ -1,12 +1,16 @@
 package com.seamfix.qrcode;
 
+import android.text.TextUtils;
+
+import java.io.Serializable;
+
 /**
  * t = text
  * p = print template
  * d = finger type
  * f = face template - json encoded
  */
-public class EnrollmentData {
+public class EnrollmentData implements Serializable {
    private String f;
    private String p;
    private String d;
@@ -42,5 +46,9 @@ public class EnrollmentData {
 
     public void setT(String t) {
         this.t = t;
+    }
+
+    public boolean validate(){
+        return !(TextUtils.isEmpty(p) || TextUtils.isEmpty(d) || TextUtils.isEmpty(t));
     }
 }

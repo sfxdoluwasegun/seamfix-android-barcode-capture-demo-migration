@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.util.Base64;
 
+import com.google.gson.Gson;
 import com.seamfix.qrcode.EnrollmentData;
 import com.seamfix.qrcode.FingerQrCode;
 import com.seamfix.seamcode.R;
@@ -45,7 +46,6 @@ public class DataSession {
         ArrayList<String> textData =  new ArrayList<>();
         textData.add(ourInstance.getTextData().get(R.id.field_first_name));
         textData.add(ourInstance.getTextData().get(R.id.field_last_name));
-        textData.add(ourInstance.getTextData().get(R.id.field_middle_name));
         textData.add(ourInstance.getTextData().get(R.id.field_registration_number));
         textData.add(ourInstance.getTextData().get(R.id.field_score));
         String text = TextUtils.join(":", textData);
@@ -56,7 +56,9 @@ public class DataSession {
         ...................................
          */
         String faceTemplate = ourInstance.getTextData().get(R.id.babs_template);
-        enrollmentData.setF(faceTemplate);
+        //float[] templateData = new Gson().fromJson(faceTemplate, float[].class);
+        //String finalString = FingerQrCode.encodeEmbeddings(templateData);
+        //enrollmentData.setF(finalString);
 
         /*
         Get print data and extract template

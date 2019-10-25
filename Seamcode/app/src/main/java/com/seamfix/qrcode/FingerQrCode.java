@@ -24,7 +24,11 @@ import com.sf.bio.lib.util.Crypter;
 import net.glxn.qrgen.android.QRCode;
 import net.glxn.qrgen.core.image.ImageType;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.zip.GZIPOutputStream;
 
 public class FingerQrCode {
 
@@ -51,8 +55,20 @@ public class FingerQrCode {
 
     public static Bitmap encodeEnrollData(EnrollmentData enrollmentData){
         String data = gson.toJson(enrollmentData);
+
+        try (ByteArrayOutputStream fos = new ByteArrayOutputStream();
+             GZIPOutputStream gos = new GZIPOutputStream(fos);
+             ObjectOutputStream oos = new ObjectOutputStream(gos)) {
+
+            oos.writeObject(enrollmentData);
+            oos.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         byte[]encData = Crypter.encrypt("E5572DA36352063BBBA1321799B941B8FC337E64F5B4AB15EB01B9F68FB946A1", data);
         String encString = Base64.encodeToString(encData, Base64.NO_WRAP);
+        Log.e("BASE=====", encString);
         QRCode code = QRCode.from(encString);
         code.to(ImageType.PNG);
         code.withSize(400, 400);
@@ -120,5 +136,29 @@ public class FingerQrCode {
         byte[] encData = Base64.decode(qrData, Base64.NO_WRAP);
         String jsonData = Crypter.decrypt("E5572DA36352063BBBA1321799B941B8FC337E64F5B4AB15EB01B9F68FB946A1", encData);
         return gson.fromJson(jsonData, Data.class);
+    }
+
+
+    public static String encodeEmbeddings(float[] embedding){
+        String finalString = "";
+        for(float d: embedding){
+            finalString = finalString.concat(String.valueOf(d));
+        }
+        return finalString;
+    }
+
+    public static float[] decodeEmbeddings(String encodedEmbeddings){
+        String[] construct = encodedEmbeddings.split("0\\.");
+        float[] embeds = new float[136];
+        for(int m = 0; m< construct.length; m++){
+            String d = construct[m];
+            if(d.isEmpty()){
+                continue;
+            }
+            String k = "0." +construct[m];
+            float f = Float.parseFloat(k);
+            embeds[m-1] = f;
+        }
+        return embeds;
     }
 }

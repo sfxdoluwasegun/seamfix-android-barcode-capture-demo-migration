@@ -15,6 +15,10 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            abiFilters "armeabi", "armeabi-v7a"
+        }
     }
     buildTypes {
         release {
@@ -22,7 +26,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
+//    dexOptions {
+//        jumboMode = true
+//        incremental true
+//        javaMaxHeapSize "8g"
+//    }
     // Temporary fix until alpha10
     packagingOptions {
         exclude 'META-INF/proguard/androidx-annotations.pro'
@@ -65,6 +73,8 @@ dependencies {
     implementation 'com.machinezoo.sourceafis:sourceafis:3.6.0'
     implementation 'com.izettle:html2bitmap:1.9'
     implementation group: 'org.jsoup', name: 'jsoup', version: '1.12.1'
+    implementation  'org.tensorflow:tensorflow-android:+'
+
 
     implementation "android.arch.lifecycle:extensions:$archLifecycleVersion"
     annotationProcessor "android.arch.lifecycle:compiler:$archLifecycleVersion"

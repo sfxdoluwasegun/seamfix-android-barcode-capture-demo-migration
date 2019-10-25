@@ -7,6 +7,7 @@ public class FaceFeatures {
 
     public native int[] generateFeatures(float[]x, float[]y);
     public native float matchFeatures (int[] initialFeatures, float[]x, float[]y);
+    public native float matchEmbeddings(float[] probe, float[] candidate);
 
     static {
         System.loadLibrary("featureCalculation");

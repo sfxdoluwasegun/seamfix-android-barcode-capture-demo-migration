@@ -20,7 +20,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name="com.seamfix.qrcode.enrollment.EnrollmentCameraActivity"/>
+        <activity android:name="com.seamfix.qrcode.enrollment.EnrollmentCameraActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="com.seamfix.qrcode.HomeActivity"
             android:configChanges="keyboardHidden|screenSize|orientation"
@@ -31,7 +33,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.seamfix.qrcode.CameraActivity" /> <!-- Download Barcode Detection Models from PlayStore upon App download -->
+        <activity android:name="com.seamfix.qrcode.CameraActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="portrait"/> <!-- Download Barcode Detection Models from PlayStore upon App download -->
         <meta-data
             android:name="com.google.firebase.ml.vision.DEPENDENCIES"
             android:value="barcode | face" /> <!-- <activity android:name="com.seamfix.qrcode.TestSingleFingerActivity"> -->
@@ -55,18 +59,37 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <activity android:name="com.seamfix.qrcode.DecodedActivity" />
-        <activity android:name="com.seamfix.qrcode.MainActivity" />
+        <activity android:name="com.seamfix.qrcode.DecodedActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="portrait"/>
+        <activity android:name="com.seamfix.qrcode.MainActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="com.seamfix.qrcode.FingerprintQrMatcherActivity"
             android:configChanges="keyboardHidden|screenSize|orientation"
             android:screenOrientation="portrait" />
-        <activity android:name="com.seamfix.qrcode.enrollment.PreviewEnrollmentActivity" />
-        <activity android:name="com.seamfix.qrcode.enrollment.EnrollmentFingerprintActivity" />
-        <activity android:name="com.seamfix.qrcode.enrollment.FormActivity" />
-        <activity android:name="com.seamfix.qrcode.verification.VerificationCameraActivity" />
-        <activity android:name="com.seamfix.qrcode.enrollment.EnrollmentFingerTypeActivity" />
-        <activity android:name="com.seamfix.qrcode.verification.VerificationFingerprintActivity" />
+        <activity android:name="com.seamfix.qrcode.enrollment.PreviewEnrollmentActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="portrait"/>
+        <activity android:name="com.seamfix.qrcode.enrollment.EnrollmentFingerprintActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="portrait"/>
+        <activity android:name="com.seamfix.qrcode.enrollment.FormActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="portrait"/>
+        <activity android:name="com.seamfix.qrcode.verification.VerificationCameraActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="portrait"/>
+        <activity android:name="com.seamfix.qrcode.enrollment.EnrollmentFingerTypeActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="portrait"/>
+        <activity android:name="com.seamfix.qrcode.verification.VerificationFingerprintActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="portrait"/>
+        <activity android:name="com.seamfix.qrcode.verification.VerificationDetailsActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

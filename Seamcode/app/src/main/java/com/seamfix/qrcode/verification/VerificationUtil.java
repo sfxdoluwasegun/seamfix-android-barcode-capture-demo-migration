@@ -7,6 +7,9 @@ import com.google.firebase.ml.vision.face.FirebaseVisionFace;
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceLandmark;
 import com.seamfix.qrcode.FaceFeatures;
 import com.seamfix.qrcode.enrollment.Landmark;
+import com.seamfix.qrcode.mtcnn.Box;
+
+import java.util.Arrays;
 
 public class VerificationUtil {
 
@@ -32,11 +35,11 @@ public class VerificationUtil {
 
             float m = bounds.exactCenterX();
 
-            x[Landmark.UPPER_FACE_CENTER] = m;
-            y[Landmark.UPPER_FACE_CENTER] = bounds.top;
+            //x[Landmark.UPPER_FACE_CENTER] = m;
+            //y[Landmark.UPPER_FACE_CENTER] = bounds.top;
 
-            x[Landmark.LOWER_FACE_CENTER] = m;
-            y[Landmark.LOWER_FACE_CENTER] = bounds.bottom;
+            //x[Landmark.LOWER_FACE_CENTER] = m;
+           //y[Landmark.LOWER_FACE_CENTER] = bounds.bottom;
         }
 
 
@@ -63,6 +66,139 @@ public class VerificationUtil {
             x[Landmark.MOUTH_CENTER] = mouthCenter.getPosition().getX();
             y[Landmark.MOUTH_CENTER] = mouthCenter.getPosition().getY();
         }
+
+        FirebaseVisionFaceLandmark mouthLeft = face.getLandmark(FirebaseVisionFaceLandmark.MOUTH_LEFT);
+        if (mouthLeft != null) {
+            x[Landmark.MOUTH_LEFT] = mouthLeft.getPosition().getX();
+            y[Landmark.MOUTH_LEFT] = mouthLeft.getPosition().getY();
+        }
+
+        FirebaseVisionFaceLandmark mouthRight = face.getLandmark(FirebaseVisionFaceLandmark.MOUTH_LEFT);
+        if (mouthRight != null) {
+            x[Landmark.MOUTH_RIGHT] = mouthRight.getPosition().getX();
+            y[Landmark.MOUTH_RIGHT] = mouthRight.getPosition().getY();
+        }
+
+        Log.e("X====", "" + Arrays.toString(x));
+
+        Log.e("Y====", "" + Arrays.toString(y));
+
+        int[] features = FaceFeatures.getInstance().generateFeatures(x, y);
+        Log.e("FEATRURE", "" + Arrays.toString(features));
+
+        int[] features1 = FaceFeatures.getInstance().generateFeatures(x, y);
+        Log.e("FEATRURE1", "" + Arrays.toString(features1));
+
+        int[] features2 = FaceFeatures.getInstance().generateFeatures(x, y);
+        Log.e("FEATRURE2", "" + Arrays.toString(features2));
+
+        int[] features3 = FaceFeatures.getInstance().generateFeatures(x, y);
+        Log.e("FEATRURE3", "" + Arrays.toString(features3));
+
+        int[] features4 = FaceFeatures.getInstance().generateFeatures(x, y);
+
+
+        float score = FaceFeatures.getInstance().matchFeatures(candidateFeatures, x, y);
+        Log.e("SCORE", "MATCH SCORE===" + score);
+        return new Result(score, "Successful", 0);
+    }
+
+    public static int[] getFaceFeatures(Box box) {
+
+        float[] x = new float[10];
+        float[] y = new float[10];
+
+        x[Landmark.LEFT_LOWER_BOUNDING] = 0;
+        y[Landmark.LEFT_LOWER_BOUNDING] = 0;
+
+        x[Landmark.RIGHT_LOWER_BOUNDING] = 0;
+        y[Landmark.RIGHT_LOWER_BOUNDING] = 0;
+
+        x[Landmark.RIGHT_UPPER_BOUNDING] = 0;
+        y[Landmark.RIGHT_UPPER_BOUNDING] = 0;
+
+        x[Landmark.LEFT_UPPER_BOUNDING] = 0;
+        y[Landmark.LEFT_UPPER_BOUNDING] = 0;
+
+
+        x[Landmark.RIGHT_EYE] = box.landmark[0].x;
+        y[Landmark.RIGHT_EYE] = box.landmark[0].y;
+
+        x[Landmark.LEFT_EYE] = box.landmark[1].x;
+        y[Landmark.LEFT_EYE] = box.landmark[1].y;
+
+        x[Landmark.NOSE_TIP] = box.landmark[2].x;
+        y[Landmark.NOSE_TIP] = box.landmark[2].y;
+
+        x[Landmark.MOUTH_RIGHT] = box.landmark[3].x;
+        y[Landmark.MOUTH_RIGHT] = box.landmark[3].y;
+
+        x[Landmark.MOUTH_LEFT] = box.landmark[4].x;
+        y[Landmark.MOUTH_LEFT] = box.landmark[4].y;
+
+
+        Log.e("X====", "" + Arrays.toString(x));
+
+        Log.e("Y====", "" + Arrays.toString(y));
+
+        int[] features = FaceFeatures.getInstance().generateFeatures(x, y);
+        Log.e("FEATRURE", "" + Arrays.toString(features));
+
+        int[] features1 = FaceFeatures.getInstance().generateFeatures(x, y);
+        Log.e("FEATRURE1", "" + Arrays.toString(features1));
+
+        int[] features2 = FaceFeatures.getInstance().generateFeatures(x, y);
+        Log.e("FEATRURE2", "" + Arrays.toString(features2));
+
+        int[] features3 = FaceFeatures.getInstance().generateFeatures(x, y);
+        Log.e("FEATRURE3", "" + Arrays.toString(features3));
+
+        return FaceFeatures.getInstance().generateFeatures(x, y);
+
+
+        //float score = FaceFeatures.getInstance().matchFeatures(candidateFeatures, x, y);
+        //Log.e("SCORE", "MATCH SCORE===" + score);
+    }
+
+    public static Result getFeatureScore(Box box, int[] candidateFeatures){
+        float[] x = new float[10];
+        float[] y = new float[10];
+
+        x[Landmark.LEFT_LOWER_BOUNDING] = 0;
+        y[Landmark.LEFT_LOWER_BOUNDING] = 0;
+
+        x[Landmark.RIGHT_LOWER_BOUNDING] = 0;
+        y[Landmark.RIGHT_LOWER_BOUNDING] = 0;
+
+        x[Landmark.RIGHT_UPPER_BOUNDING] = 0;
+        y[Landmark.RIGHT_UPPER_BOUNDING] = 0;
+
+        x[Landmark.LEFT_UPPER_BOUNDING] = 0;
+        y[Landmark.LEFT_UPPER_BOUNDING] = 0;
+
+
+        x[Landmark.RIGHT_EYE] = box.landmark[0].x;
+        y[Landmark.RIGHT_EYE] = box.landmark[0].y;
+
+        x[Landmark.LEFT_EYE] = box.landmark[1].x;
+        y[Landmark.LEFT_EYE] = box.landmark[1].y;
+
+        x[Landmark.NOSE_TIP] = box.landmark[2].x;
+        y[Landmark.NOSE_TIP] = box.landmark[2].y;
+
+        x[Landmark.MOUTH_RIGHT] = box.landmark[3].x;
+        y[Landmark.MOUTH_RIGHT] = box.landmark[3].y;
+
+        x[Landmark.MOUTH_LEFT] = box.landmark[4].x;
+        y[Landmark.MOUTH_LEFT] = box.landmark[4].y;
+
+
+        Log.e("X====", "" + Arrays.toString(x));
+
+        Log.e("Y====", "" + Arrays.toString(y));
+
+        int[] features = FaceFeatures.getInstance().generateFeatures(x, y);
+        Log.e("FEATRURE", "" + Arrays.toString(features));
 
         float score = FaceFeatures.getInstance().matchFeatures(candidateFeatures, x, y);
         Log.e("SCORE", "MATCH SCORE===" + score);

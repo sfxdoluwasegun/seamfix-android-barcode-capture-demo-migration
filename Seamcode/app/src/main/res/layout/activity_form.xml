@@ -69,7 +69,8 @@
                 android:layout_height="wrap_content"
                 app:length="10"
                 app:label="@string/text_registration_number"
-                app:required="true" />
+                app:required="true"
+                app:inputType="textCapCharacters"/>
 
             <com.seamfix.qrcode.control.FieldPane
                 android:id="@+id/field_score"

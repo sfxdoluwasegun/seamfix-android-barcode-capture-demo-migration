@@ -37,8 +37,16 @@
     <string name="text_printer_exit">Exit</string>
     <string name="text_save">Save</string>
     <string name="text_cancel_save">Cancel Enrollment</string>
-    <string name="text_message_exit_enrollment">You have chossen to cancel this enrollment, Is this what you really want to do?</string>
+    <string name="text_message_exit_enrollment">You have chosen to cancel this enrollment, Is this what you really want to do?</string>
     <string name="text_yes_cancel">Yes, cancel</string>
     <string name="text_just_kidding">No</string>
     <string name="text_select_print_to_capture">Select Fingerprint Type</string>
+    <string name="text_verification_deatils">Verification Details</string>
+    <string name="text_field_first_name">First Name</string>
+    <string name="text_pre_verification_details">Pre-Verification Details</string>
+    <string name="text_pre_detail">Textual information summary. This certifies that all information contained within here are valid or not</string>
+    <string name="text_quality_check">Quality Check</string>
+    <string name="text_button_continue">Continue</string>
+    <string name="text_id_qr_authenticity">IDQR Authenticity</string>
+    <string name="authentication_status_not_confirm">Not Confirmed</string>
 </resources>

@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -18,41 +17,31 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.ml.vision.FirebaseVision;
-import com.google.firebase.ml.vision.barcode.FirebaseVisionBarcodeDetectorOptions;
-import com.google.firebase.ml.vision.common.FirebaseVisionImage;
-import com.google.firebase.ml.vision.common.FirebaseVisionPoint;
-import com.google.firebase.ml.vision.face.FirebaseVisionFace;
-import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetector;
-import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions;
-import com.google.firebase.ml.vision.face.FirebaseVisionFaceLandmark;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.otaliastudios.cameraview.CameraListener;
 import com.otaliastudios.cameraview.CameraOptions;
 import com.otaliastudios.cameraview.CameraView;
 import com.otaliastudios.cameraview.Facing;
 import com.otaliastudios.cameraview.Gesture;
 import com.otaliastudios.cameraview.GestureAction;
-import com.seamfix.qrcode.FaceFeatures;
-import com.seamfix.qrcode.Point;
-import com.seamfix.qrcode.Utils;
+import com.seamfix.qrcode.TensorUtil;
+import com.seamfix.qrcode.mtcnn.Box;
+import com.seamfix.qrcode.mtcnn.MTCNN;
 import com.seamfix.seamcode.R;
 import com.sf.bio.lib.PictUtil;
+import com.sf.bio.lib.util.FileUtils;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Vector;
 
 
 public class EnrollmentCameraActivity extends AppCompatActivity {
     ImageButton capture;
     CameraView camera;
+    MTCNN mtcnn;
+    TensorUtil tensorUtil;
+    byte[] model;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,6 +59,9 @@ public class EnrollmentCameraActivity extends AppCompatActivity {
         capture.setOnClickListener(v -> {
             camera.captureSnapshot();
         });
+        mtcnn = new MTCNN(getAssets());
+        tensorUtil = TensorUtil.getInstance();
+        model = FileUtils.readAsset(this, "face_model.pb");
     }
 
 
@@ -82,81 +74,132 @@ public class EnrollmentCameraActivity extends AppCompatActivity {
             Bitmap capturedImage = BitmapFactory.decodeByteArray(normalizedJpeg, 0, normalizedJpeg.length);
             Log.e("IMAGE HEIGHT", ""+capturedImage.getHeight());
 
-            FirebaseVisionFaceDetectorOptions options = Utils.Companion.getFaceDetectionOptions();
-            FirebaseVisionImage image = FirebaseVisionImage.fromBitmap(capturedImage);
-            FirebaseVisionFaceDetector detector = FirebaseVision.getInstance().getVisionFaceDetector(options);
-            Task<List<FirebaseVisionFace>> result  = detector.detectInImage(image);
-
-            result.addOnSuccessListener(faces -> {
-                if (faces.size() != 1) {
-                    Toast.makeText(EnrollmentCameraActivity.this, "More than a face was found", Toast.LENGTH_SHORT).show();
-                    return;
+            try {
+                Vector<Box> boxes = mtcnn.detectFaces(capturedImage, 40);
+                for (int i = 0; i < boxes.size(); i++) {
+                    com.seamfix.qrcode.mtcnn.Utils.drawRect(capturedImage, boxes.get(i).transform2Rect());
+                    com.seamfix.qrcode.mtcnn.Utils.drawPoints(capturedImage, boxes.get(i).landmark);
+                    Rect rect = boxes.get(0).transform2Rect();
+                    Bitmap croppedBitmap = Bitmap.createBitmap(capturedImage, rect.left, rect.top, rect.width(), rect.height());
+                    Bitmap scaledBitmap  = Bitmap.createScaledBitmap(croppedBitmap, 64, 64, false);
+                    boolean isInit = tensorUtil.initializeTensorflowInferenceAsyn(model);
+                    if(isInit) {
+                        float[] features = tensorUtil.getEmbeddings(scaledBitmap);
+                        displayPreview(capturedImage, normalizedJpeg, features);
+                    }
                 }
-                FirebaseVisionFace face = faces.get(0);
-                Rect bounds = face.getBoundingBox();
-
-                float[] x = new float[10];
-                float[] y = new float[10];
-
-                if (bounds != null) {
-                    x[Landmark.LEFT_LOWER_BOUNDING] = bounds.left;
-                    y[Landmark.LEFT_LOWER_BOUNDING] = bounds.bottom;
-
-                    x[Landmark.RIGHT_LOWER_BOUNDING] = bounds.right;
-                    y[Landmark.RIGHT_LOWER_BOUNDING] = bounds.bottom;
-
-                    x[Landmark.RIGHT_UPPER_BOUNDING] = bounds.right;
-                    y[Landmark.RIGHT_UPPER_BOUNDING] = bounds.top;
-
-                    x[Landmark.LEFT_UPPER_BOUNDING] = bounds.left;
-                    y[Landmark.LEFT_UPPER_BOUNDING] = bounds.top;
-
-                    float m = bounds.exactCenterX();
-
-                    x[Landmark.UPPER_FACE_CENTER] = m;
-                    y[Landmark.UPPER_FACE_CENTER] = bounds.top;
-
-                    x[Landmark.LOWER_FACE_CENTER] = m;
-                    y[Landmark.LOWER_FACE_CENTER] = bounds.bottom;
-                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            //for(int m= 0; m<=3; m++) {
+//                FirebaseVisionFaceDetectorOptions options = Utils.Companion.getFaceDetectionOptions();
+//                FirebaseVisionImage image = FirebaseVisionImage.fromBitmap(capturedImage);
+//                FirebaseVisionFaceDetector detector = FirebaseVision.getInstance().getVisionFaceDetector(options);
+//                Task<List<FirebaseVisionFace>> result = detector.detectInImage(image);
 
 
-                FirebaseVisionFaceLandmark rightEye = face.getLandmark(FirebaseVisionFaceLandmark.RIGHT_EYE);
-                if (rightEye != null) {
-                    x[Landmark.RIGHT_EYE] = rightEye.getPosition().getX();
-                    y[Landmark.RIGHT_EYE] = rightEye.getPosition().getY();
-                }
+//                result.addOnSuccessListener(faces -> {
+//                    if (faces.size() != 1) {
+//                        Toast.makeText(EnrollmentCameraActivity.this, "More than a face was found", Toast.LENGTH_SHORT).show();
+//                        return;
+//                    }
+//                    FirebaseVisionFace face = faces.get(0);
+//                    Rect bounds = face.getBoundingBox();
+//
+//                    float[] x = new float[10];
+//                    float[] y = new float[10];
+//
+//                    if (bounds != null) {
+//                        x[Landmark.LEFT_LOWER_BOUNDING] = bounds.left;
+//                        y[Landmark.LEFT_LOWER_BOUNDING] = bounds.bottom;
+//
+//                        x[Landmark.RIGHT_LOWER_BOUNDING] = bounds.right;
+//                        y[Landmark.RIGHT_LOWER_BOUNDING] = bounds.bottom;
+//
+//                        x[Landmark.RIGHT_UPPER_BOUNDING] = bounds.right;
+//                        y[Landmark.RIGHT_UPPER_BOUNDING] = bounds.top;
+//
+//                        x[Landmark.LEFT_UPPER_BOUNDING] = bounds.left;
+//                        y[Landmark.LEFT_UPPER_BOUNDING] = bounds.top;
+//
+////                    float m = bounds.exactCenterX();
+////
+////                    x[Landmark.UPPER_FACE_CENTER] = m;
+////                    y[Landmark.UPPER_FACE_CENTER] = bounds.top;
+////
+////                    x[Landmark.LOWER_FACE_CENTER] = m;
+////                    y[Landmark.LOWER_FACE_CENTER] = bounds.bottom;
+//                    }
+//
+//
+//                    FirebaseVisionFaceLandmark rightEye = face.getLandmark(FirebaseVisionFaceLandmark.RIGHT_EYE);
+//                    if (rightEye != null) {
+//                        x[Landmark.RIGHT_EYE] = rightEye.getPosition().getX();
+//                        y[Landmark.RIGHT_EYE] = rightEye.getPosition().getY();
+//                    }
+//
+//                    FirebaseVisionFaceLandmark leftEye = face.getLandmark(FirebaseVisionFaceLandmark.LEFT_EYE);
+//                    if (leftEye != null) {
+//                        x[Landmark.LEFT_EYE] = leftEye.getPosition().getX();
+//                        y[Landmark.LEFT_EYE] = leftEye.getPosition().getY();
+//                    }
+//
+//                    FirebaseVisionFaceLandmark noseTip = face.getLandmark(FirebaseVisionFaceLandmark.NOSE_BASE);
+//                    if (noseTip != null) {
+//                        x[Landmark.NOSE_TIP] = noseTip.getPosition().getX();
+//                        y[Landmark.NOSE_TIP] = noseTip.getPosition().getY();
+//                    }
+//
+//                    FirebaseVisionFaceLandmark mouthCenter = face.getLandmark(FirebaseVisionFaceLandmark.MOUTH_BOTTOM);
+//                    if (mouthCenter != null) {
+//                        x[Landmark.MOUTH_CENTER] = mouthCenter.getPosition().getX();
+//                        y[Landmark.MOUTH_CENTER] = mouthCenter.getPosition().getY();
+//                    }
+//
+//                    FirebaseVisionFaceLandmark mouthLeft = face.getLandmark(FirebaseVisionFaceLandmark.MOUTH_LEFT);
+//                    if (mouthLeft != null) {
+//                        x[Landmark.LOWER_FACE_CENTER] = mouthLeft.getPosition().getX();
+//                        y[Landmark.LOWER_FACE_CENTER] = mouthLeft.getPosition().getY();
+//                    }
+//
+//                    FirebaseVisionFaceLandmark mouthRight = face.getLandmark(FirebaseVisionFaceLandmark.MOUTH_LEFT);
+//                    if (mouthRight != null) {
+//                        x[Landmark.UPPER_FACE_CENTER] = mouthRight.getPosition().getX();
+//                        y[Landmark.UPPER_FACE_CENTER] = mouthRight.getPosition().getY();
+//                    }
+//
+//
+//                    Log.e("X====", "" + Arrays.toString(x));
+//
+//                    Log.e("Y====", "" + Arrays.toString(y));
+//
+//                    int[] features = FaceFeatures.getInstance().generateFeatures(x, y);
+//                    Log.e("FEATRURE", "" + Arrays.toString(features));
+//
+//                    int[] features1 = FaceFeatures.getInstance().generateFeatures(x, y);
+//                    Log.e("FEATRURE1", "" + Arrays.toString(features1));
+//
+//                    int[] features2 = FaceFeatures.getInstance().generateFeatures(x, y);
+//                    Log.e("FEATRURE2", "" + Arrays.toString(features2));
+//
+//                    int[] features3 = FaceFeatures.getInstance().generateFeatures(x, y);
+//                    Log.e("FEATRURE3", "" + Arrays.toString(features3));
+//
+//                    int[] features4 = FaceFeatures.getInstance().generateFeatures(x, y);
+//                    Log.e("FEATRURE4", "" + Arrays.toString(features4));
+//
+//
+//                    displayPreview(capturedImage, normalizedJpeg, features);
+//
+//                });
+//                result.addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//                        Log.e("HELOO", "ERROR", e);
+//                    }
+//                });
+            }
 
-                FirebaseVisionFaceLandmark leftEye = face.getLandmark(FirebaseVisionFaceLandmark.LEFT_EYE);
-                if (leftEye != null) {
-                    x[Landmark.LEFT_EYE] = leftEye.getPosition().getX();
-                    y[Landmark.LEFT_EYE] = leftEye.getPosition().getY();
-                }
-
-                FirebaseVisionFaceLandmark noseTip = face.getLandmark(FirebaseVisionFaceLandmark.NOSE_BASE);
-                if (noseTip != null) {
-                    x[Landmark.NOSE_TIP] = noseTip.getPosition().getX();
-                    y[Landmark.NOSE_TIP] = noseTip.getPosition().getY();
-                }
-
-                FirebaseVisionFaceLandmark mouthCenter = face.getLandmark(FirebaseVisionFaceLandmark.MOUTH_BOTTOM);
-                if (mouthCenter != null) {
-                    x[Landmark.MOUTH_CENTER] = mouthCenter.getPosition().getX();
-                    y[Landmark.MOUTH_CENTER] = mouthCenter.getPosition().getY();
-                }
-
-                int[] features = FaceFeatures.getInstance().generateFeatures(x, y);
-
-                displayPreview(capturedImage, normalizedJpeg, features);
-
-            });
-            result.addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Log.e("HELOO", "ERROR", e);
-                }
-            });
-        }
 
         @Override
         public void onCameraOpened(CameraOptions options) {
@@ -166,7 +209,7 @@ public class EnrollmentCameraActivity extends AppCompatActivity {
     };
 
 
-    private void displayPreview(Bitmap bitmap, byte[] imageData, int[] features) {
+    private void displayPreview(Bitmap bitmap, byte[] imageData, float[] features) {
         AlertDialog launchDialog = new AlertDialog.Builder(this).create();
         View view = LayoutInflater.from(this).inflate(R.layout.camera_preview_dialog_layout, null, false);
         Button okButton     = view.findViewById(R.id.ok);
@@ -204,7 +247,7 @@ public class EnrollmentCameraActivity extends AppCompatActivity {
         super.onResume();
         String imageData = DataSession.getInstance().getTextData().get(R.layout.enrollment_activity_camera);
         String babsImageTemplate = DataSession.getInstance().getTextData().get(R.id.babs_template);
-        int[] templateData = new Gson().fromJson(babsImageTemplate, int[].class);
+        float[] templateData = new Gson().fromJson(babsImageTemplate, float[].class);
 
         if(imageData != null && !TextUtils.isEmpty(imageData)){
            byte[] data = Base64.decode(imageData, Base64.NO_WRAP);
@@ -224,6 +267,7 @@ public class EnrollmentCameraActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        tensorUtil.closeTensorFlowInference();
         camera.stop();
     }
 }
