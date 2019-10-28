@@ -34,7 +34,7 @@ public class FormActivity extends AppCompatActivity {
         formData    = findViewById(R.id.form_data);
         next.setOnClickListener(v -> {
             if(saveText()){
-                Intent intent = new Intent(this, EnrollmentCameraActivity.class);
+                Intent intent = new Intent(this, ImageEnrollmentCameraActivity.class);
                 startActivity(intent);
             }else{
                 Toast.makeText(this, "One or more fields are empty, all fields are required", Toast.LENGTH_SHORT).show();

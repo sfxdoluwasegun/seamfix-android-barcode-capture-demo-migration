@@ -4,8 +4,11 @@ package com.seamfix.qrcode.enrollment;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
 import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -23,15 +26,26 @@ import com.otaliastudios.cameraview.CameraListener;
 import com.otaliastudios.cameraview.CameraOptions;
 import com.otaliastudios.cameraview.CameraView;
 import com.otaliastudios.cameraview.Facing;
+import com.otaliastudios.cameraview.Frame;
+import com.otaliastudios.cameraview.FrameProcessor;
 import com.otaliastudios.cameraview.Gesture;
 import com.otaliastudios.cameraview.GestureAction;
+import com.otaliastudios.cameraview.Size;
 import com.seamfix.qrcode.TensorUtil;
 import com.seamfix.qrcode.mtcnn.Box;
 import com.seamfix.qrcode.mtcnn.MTCNN;
+import com.seamfix.qrcode.opencv.CVUtil;
+import com.seamfix.qrcode.verification.Session;
+import com.seamfix.qrcode.verification.VerificationCameraActivity;
+import com.seamfix.qrcode.verification.VerificationDetailsActivity;
 import com.seamfix.seamcode.R;
 import com.sf.bio.lib.PictUtil;
 import com.sf.bio.lib.util.FileUtils;
 
+import org.opencv.core.Mat;
+
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.Vector;
 
 
@@ -40,7 +54,9 @@ public class EnrollmentCameraActivity extends AppCompatActivity {
     CameraView camera;
     MTCNN mtcnn;
     TensorUtil tensorUtil;
+    boolean cameraCaptured = false;
     byte[] model;
+    ArrayList<Bitmap> sampleBitmaps = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +69,7 @@ public class EnrollmentCameraActivity extends AppCompatActivity {
         camera.mapGesture(Gesture.TAP, GestureAction.FOCUS);
         camera.setFacing(Facing.BACK);
         camera.addCameraListener(cameraListener);
+        //camera.addFrameProcessor(frameProcessor);
 
         capture = findViewById(R.id.enrollment_camera_capture_button);
         capture.setVisibility(View.GONE);
@@ -81,12 +98,17 @@ public class EnrollmentCameraActivity extends AppCompatActivity {
                     com.seamfix.qrcode.mtcnn.Utils.drawPoints(capturedImage, boxes.get(i).landmark);
                     Rect rect = boxes.get(0).transform2Rect();
                     Bitmap croppedBitmap = Bitmap.createBitmap(capturedImage, rect.left, rect.top, rect.width(), rect.height());
-                    Bitmap scaledBitmap  = Bitmap.createScaledBitmap(croppedBitmap, 64, 64, false);
-                    boolean isInit = tensorUtil.initializeTensorflowInferenceAsyn(model);
-                    if(isInit) {
-                        float[] features = tensorUtil.getEmbeddings(scaledBitmap);
-                        displayPreview(capturedImage, normalizedJpeg, features);
-                    }
+                    Bitmap scaledBitmap  = Bitmap.createScaledBitmap(croppedBitmap, 200, 200, false);
+
+                    float[] mat = new CVUtil().generateEigenFace(scaledBitmap, 50);
+
+                    System.out.println("==========");
+
+                    //boolean isInit = tensorUtil.initializeTensorflowInferenceAsyn(model);
+                    //if(isInit) {
+                    //    float[] features = tensorUtil.getEmbeddings(scaledBitmap);
+                    //    displayPreview(capturedImage, normalizedJpeg, features);
+                    //}
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -205,6 +227,46 @@ public class EnrollmentCameraActivity extends AppCompatActivity {
         public void onCameraOpened(CameraOptions options) {
             super.onCameraOpened(options);
             capture.setVisibility(View.VISIBLE);
+        }
+    };
+
+    private FrameProcessor frameProcessor = new FrameProcessor() {
+        @Override
+        public void process(@NonNull Frame frame) {
+
+            byte[] data  = frame.getData();
+            Size size  = frame.getSize();
+            int rotation = frame.getRotation();
+
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            YuvImage yuvImage = new YuvImage(data, ImageFormat.NV21, size.getWidth(), size.getHeight(), null);
+            yuvImage.compressToJpeg(new Rect(0, 0, size.getWidth(), size.getHeight()), 90, out);
+            byte[] imageBytes = out.toByteArray();
+            Bitmap imageBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+            Bitmap bit = PictUtil.rotateImage(imageBitmap, rotation);
+            Bitmap bm = com.seamfix.qrcode.mtcnn.Utils.copyBitmap(bit);
+
+            try {
+                Vector<Box> boxes = mtcnn.detectFaces(bm, 40);
+                if(boxes.size() == 1 && !cameraCaptured){
+                    Log.e("FACE-DETECTED", "COUNT IS" + sampleBitmaps.size());
+                    Rect rect = boxes.get(0).transform2Rect();
+                    Bitmap croppedBitmap = Bitmap.createBitmap(bm, rect.left, rect.top, rect.width(), rect.height());
+                    Bitmap scaledBitmap  = Bitmap.createScaledBitmap(croppedBitmap, 200, 200, false);
+                    if(sampleBitmaps.size() < 10){
+                        sampleBitmaps.add(scaledBitmap);
+                        return;
+                    }
+                    float[] mat = new CVUtil().generateEigenFace(sampleBitmaps, 50);
+                    sampleBitmaps.clear();
+                    cameraCaptured = true;
+                }else{
+                    sampleBitmaps.clear();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     };
 

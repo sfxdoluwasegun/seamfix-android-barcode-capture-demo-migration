@@ -1,5 +1,6 @@
 package com.seamfix.qrcode.verification;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +13,7 @@ import android.widget.Toast;
 import com.seamfix.qrcode.Data;
 import com.seamfix.qrcode.EnrollmentData;
 import com.seamfix.qrcode.FingerQrCode;
+import com.seamfix.qrcode.HomeActivity;
 import com.seamfix.sdk.fingerprint.FingerCaptureOption;
 import com.seamfix.sdk.fingerprint.FingerPrintCaptureResult;
 import com.seamfix.sdk.fingerprint.FingerTypes;
@@ -66,9 +68,8 @@ public class VerificationFingerprintActivity extends AppCompatActivity {
             if(decodedIsoTemplate != null) {
                 double score = FingerQrCode.matchQrWithFingerprint(result.getWsqData(), decodedIsoTemplate);
                 boolean isMatch = score > 40D;
-                Toast.makeText(VerificationFingerprintActivity.this, "Match found: "+ isMatch, Toast.LENGTH_SHORT).show();
                 if(isMatch){
-                    matchFoundDialog();
+                    launchFingerVerificationDetails();
                 }else{
                     matchNotFoundDialog();
                 }
@@ -127,13 +128,19 @@ public class VerificationFingerprintActivity extends AppCompatActivity {
     private void matchNotFoundDialog() {
         View view = LayoutInflater.from(this).inflate(R.layout.match_not_found_layout, null, false);
         Button okButton = view.findViewById(R.id.ok);
-        okButton.setOnClickListener(v -> {
-            finish();
-        });
-
-        AlertDialog.Builder launchDialog = new AlertDialog.Builder(this);
+        AlertDialog launchDialog = new AlertDialog.Builder(this).create();
+        okButton.setOnClickListener(v -> launchDialog.dismiss());
         launchDialog.setView(view);
-        launchDialog.setCancelable(false);
+        launchDialog.setCancelable(true);
         launchDialog.show();
+    }
+
+    private void launchFingerVerificationDetails(){
+        Bundle bundle = getIntent().getExtras();
+        Intent intent = new Intent(VerificationFingerprintActivity.this, FingerVerificationDetailsActivity.class);
+        assert bundle != null;
+        intent.putExtras(bundle);
+        startActivity(intent);
+        finish();
     }
 }

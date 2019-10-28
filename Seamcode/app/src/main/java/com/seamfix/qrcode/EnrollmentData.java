@@ -49,6 +49,6 @@ public class EnrollmentData implements Serializable {
     }
 
     public boolean validate(){
-        return !(TextUtils.isEmpty(p) || TextUtils.isEmpty(d) || TextUtils.isEmpty(t));
+        return !(TextUtils.isEmpty(p) || TextUtils.isEmpty(d) || TextUtils.isEmpty(t) || TextUtils.isEmpty(f));
     }
 }

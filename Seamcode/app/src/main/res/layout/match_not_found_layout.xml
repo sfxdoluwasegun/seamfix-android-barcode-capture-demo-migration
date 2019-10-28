@@ -30,7 +30,7 @@
                 android:layout_marginBottom="20dp"
                 android:gravity="center"
                 android:textColor="@color/colorBlack"
-                android:text="@string/text_match_not_found"
+                android:text="@string/text_fingerprint_verification_not_successful"
                 android:textSize="18sp" />
 
         <Button

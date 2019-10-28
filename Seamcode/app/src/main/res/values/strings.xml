@@ -49,4 +49,11 @@
     <string name="text_button_continue">Continue</string>
     <string name="text_id_qr_authenticity">IDQR Authenticity</string>
     <string name="authentication_status_not_confirm">Not Confirmed</string>
+    <string name="text_fingerprint_verification_not_successful">Fingerprint Verification Failed</string>
+    <string name="text_fingerprint_verification_passed">Fingerprint Verification Passed</string>
+    <string name="text_ok">OK</string>
+    <string name="authentication_status_confirm">Confirmed</string>
+    <string name="text_button_continue_to_finger_verification">Continue to Finger Verirfication</string>
+    <string name="text_please_stay_infocus">Please wait on the Progress Bar</string>
+    <string name="text_id_finger_authenticity">Fingerprint Authentication</string>
 </resources>

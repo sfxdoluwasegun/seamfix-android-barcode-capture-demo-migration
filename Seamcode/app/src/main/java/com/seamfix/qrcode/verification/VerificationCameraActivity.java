@@ -2,6 +2,7 @@ package com.seamfix.qrcode.verification;
 
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -88,6 +89,7 @@ public class VerificationCameraActivity extends AppCompatActivity {
     private int adjustedRotation = 0;
     MTCNN mtcnn;
     String rawValue;
+    private ProgressDialog progressDialog;
     byte[] model;
     String probe = "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";
 
@@ -147,8 +149,9 @@ public class VerificationCameraActivity extends AppCompatActivity {
      * Firebase barcode processor
      */
     private FrameProcessor frameProcessor = frame -> {
-        byte[] data = frame.getData();
-        Size   size = frame.getSize();
+        byte[] data  = frame.getData();
+        Size   size  = frame.getSize();
+        int rotation = frame.getRotation();
 
         FirebaseVisionImageMetadata metaData = Utils.Companion.getFirebaseVisionImageMetaData(size.getWidth(), size.getHeight(), 1);
         FirebaseVisionImage image = FirebaseVisionImage.fromByteArray(data, metaData);
@@ -174,7 +177,7 @@ public class VerificationCameraActivity extends AppCompatActivity {
             yuvImage.compressToJpeg(new Rect(0, 0, frame.getSize().getWidth(), frame.getSize().getHeight()), 90, out);
             byte[] imageBytes = out.toByteArray();
             Bitmap imageBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-            Bitmap bit = PictUtil.rotateImage(imageBitmap, 90);
+            Bitmap bit = PictUtil.rotateImage(imageBitmap, rotation);
             Bitmap bm = com.seamfix.qrcode.mtcnn.Utils.copyBitmap(bit);
 
             try {
@@ -184,6 +187,9 @@ public class VerificationCameraActivity extends AppCompatActivity {
                     Rect rect = boxes.get(0).transform2Rect();
                     Bitmap croppedBitmap = Bitmap.createBitmap(bm, rect.left, rect.top, rect.width(), rect.height());
                     if(enrollmentData != null && enrollmentData.validate()){
+
+
+
                         Session.getInstance().setCroppedBitmap(croppedBitmap);
                         Intent intent = new Intent(VerificationCameraActivity.this, VerificationDetailsActivity.class);
                         intent.putExtra("value", rawValue);
@@ -451,6 +457,23 @@ public class VerificationCameraActivity extends AppCompatActivity {
                 Log.e("TAG", "Bad rotation value: " + rotationCompensation);
         }
         return result;
+    }
+
+
+    public void showProgressDialog(String message, boolean cancel) {
+        if (!this.isFinishing() && !this.isDestroyed() && this.hasWindowFocus()) {
+            stopProgressDialog();
+            progressDialog = new ProgressDialog(this);
+            progressDialog.setMessage(message);
+            progressDialog.setCancelable(cancel);
+            progressDialog.show();
+        }
+    }
+
+    public void stopProgressDialog() {
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
     }
 
 

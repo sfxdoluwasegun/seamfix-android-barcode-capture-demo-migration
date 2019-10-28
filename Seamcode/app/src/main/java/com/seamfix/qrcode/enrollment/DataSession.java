@@ -58,7 +58,7 @@ public class DataSession {
         String faceTemplate = ourInstance.getTextData().get(R.id.babs_template);
         //float[] templateData = new Gson().fromJson(faceTemplate, float[].class);
         //String finalString = FingerQrCode.encodeEmbeddings(templateData);
-        //enrollmentData.setF(finalString);
+        enrollmentData.setF(faceTemplate);
 
         /*
         Get print data and extract template
