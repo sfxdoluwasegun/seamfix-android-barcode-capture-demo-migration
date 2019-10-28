@@ -22,6 +22,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.otaliastudios.cameraview.CameraListener;
@@ -272,12 +273,14 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
                         sampleBitmaps.add(scaledBitmap);
                         return;
                     }
+
                     capture.post(new Runnable() {
                         @Override
                         public void run() {
                             showProgressDialog("Processing image", false);
                         }
                     });
+
                     float[] mat = new CVUtil().generateEigenFace(sampleBitmaps, 50);
                     capture.post(new Runnable() {
                         @Override
@@ -297,7 +300,8 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
                 capture.post(new Runnable() {
                     @Override
                     public void run() {
-
+                        stopProgressDialog();
+                        Toast.makeText(ImageEnrollmentCameraActivity.this, "Hmm, something went wrong please try again", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -316,18 +320,23 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
         byte[] data = PictUtil.convertBitmapToByteArray(bitmap);
 
         okButton.setOnClickListener(v -> {
-            String imageStringData = Base64.encodeToString(data, Base64.NO_WRAP);
-            String imageTemplate = new Gson().toJson(features);
+            try {
+                String imageStringData = Base64.encodeToString(data, Base64.NO_WRAP);
+                String imageTemplate = new Gson().toJson(features);
+                DataSession.getInstance().getTextData().put(R.layout.enrollment_activity_camera, imageStringData);
+                DataSession.getInstance().getTextData().put(R.id.babs_template, imageTemplate);
 
-            DataSession.getInstance().getTextData().put(R.layout.enrollment_activity_camera, imageStringData);
-            DataSession.getInstance().getTextData().put(R.id.babs_template, imageTemplate);
-
-            Intent intent = new Intent(ImageEnrollmentCameraActivity.this, EnrollmentFingerTypeActivity.class);
-            startActivity(intent);
+                Intent intent = new Intent(ImageEnrollmentCameraActivity.this, EnrollmentFingerTypeActivity.class);
+                startActivity(intent);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         });
 
         retryButton.setOnClickListener(v -> {
             DataSession.getInstance().getTextData().remove(R.layout.enrollment_activity_camera);
+            cameraCaptured =  false;
+            progressBar.setProgress(0);
             launchDialog.dismiss();
         });
 
