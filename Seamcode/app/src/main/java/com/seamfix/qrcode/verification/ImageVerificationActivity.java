@@ -241,7 +241,7 @@ public class ImageVerificationActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             stopProgressDialog();
-                            if(score> 0.4) {
+                            if(score> 0.6) {
                                 Session.getInstance().setCroppedBitmap(croppedBitmap);
                                 Intent intent = new Intent(ImageVerificationActivity.this, VerificationDetailsActivity.class);
                                 intent.putExtra("value", rawValue);

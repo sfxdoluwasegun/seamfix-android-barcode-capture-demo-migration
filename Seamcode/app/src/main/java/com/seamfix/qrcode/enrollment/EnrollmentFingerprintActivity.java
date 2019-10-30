@@ -98,7 +98,7 @@ public class EnrollmentFingerprintActivity extends AppCompatActivity {
     }
 
     private void collateData(){
-        showProgressDialog("Preparing data...", true);
+        showProgressDialog("Preparing data...", false);
 
         Thread t = new Thread(){
             @Override

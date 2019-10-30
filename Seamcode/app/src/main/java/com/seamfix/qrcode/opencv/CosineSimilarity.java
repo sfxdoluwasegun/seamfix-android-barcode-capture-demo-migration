@@ -74,8 +74,8 @@ public class CosineSimilarity {
     }
 
     public static void main(String[] args){
-        double[] b = new double[]{-299.41864, 326.06128, 126.123184, -18.858166, -28.160637, -6.3973894, -3.8341131, -0.07463955, 5.7056575, 85.06913};
-        double[] a = new double[]{63.53696, -136.31226, 68.59114, -18.929163, -31.85988, -25.110512, -93.25525, -23.695204, -5.1283636, -47.176346};
+        double[] b = new double[]{-3.6601553, 5.7953296, 8.092954, -0.21068874};
+        double[] a = new double[]{22.270666, -1.7636354, 0.59631884, 5.7579656};
 
 
         double sim = new CosineSimilarity().cosineSimilarity(a, b);

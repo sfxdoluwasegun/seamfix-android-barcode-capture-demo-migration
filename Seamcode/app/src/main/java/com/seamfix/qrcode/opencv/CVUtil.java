@@ -9,6 +9,7 @@ import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -111,7 +112,10 @@ public class CVUtil {
             Mat image = new Mat(new Size(bmp.getWidth(), bmp.getHeight()), CvType.CV_8UC3);
             Bitmap modifiedBitmap = bmp.copy(Bitmap.Config.ARGB_8888, true);
             Utils.bitmapToMat(modifiedBitmap, image);
-            image.convertTo(image, CV_32FC3, 1/255.0);
+            Mat grayFrame = new Mat();
+            Imgproc.cvtColor(image, grayFrame, Imgproc.COLOR_BGR2GRAY);
+            grayFrame.convertTo(grayFrame, CV_32FC3, 1/255.0);
+            Log.e("MEAN", "====" + grayFrame.size());
 
 
 //            Mat imgFlip = new Mat();
@@ -125,7 +129,7 @@ public class CVUtil {
 //            double [] hf = imgHalfFlip.get(0, 0);
 //            Log.e("Image Matrix", "====" + hf);
 
-            trainingImages.add(image);
+            trainingImages.add(grayFrame);
 //            trainingImages.add(imgFlip);
 //            trainingImages.add(imgHalfFlip);
         }
@@ -169,7 +173,7 @@ public class CVUtil {
 
     private Mat createDataMatrix2(Vector<Mat> trainingImages){
         Mat x = trainingImages.get(0);
-        int total = x.rows() * x.cols() * 3;
+        int total = x.rows() * x.cols();
         Mat mat = new Mat(trainingImages.size(), total, CV_32F);
         for(int i = 0; i < trainingImages.size(); i++) {
             //Mat X = mat.row(i);

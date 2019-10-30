@@ -345,7 +345,7 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
         launchDialog.setOnDismissListener(dialog -> {
             camera.start();
         });
-        launchDialog.setCancelable(true);
+        launchDialog.setCancelable(false);
         launchDialog.show();
     }
 

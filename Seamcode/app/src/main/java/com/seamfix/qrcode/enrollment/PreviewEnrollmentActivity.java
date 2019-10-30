@@ -1,7 +1,7 @@
 package com.seamfix.qrcode.enrollment;
 
 
-import android.content.DialogInterface;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -42,6 +41,7 @@ public class PreviewEnrollmentActivity extends AppCompatActivity {
     private LinearLayout printLayout;
     private WebView webView;
     private DetailWebView detailWebView;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +59,18 @@ public class PreviewEnrollmentActivity extends AppCompatActivity {
         exitBtn.setOnClickListener(v -> exitDialogWarning());
         printBtn.setOnClickListener(v -> saveImage(webView));
 
+        showProgressDialog("Preparing Preview", false);
+        Thread thread = new Thread(){
+            @Override
+            public void run(){
+                prepareAndShowPreview();
+            }
+        };
+        thread.start();
+    }
 
+
+    private void prepareAndShowPreview(){
         try {
             InputStream in = this.getAssets().open("jamb3.html");
             String html = FileUtils.getStringfromInputStream(in);
@@ -102,11 +113,16 @@ public class PreviewEnrollmentActivity extends AppCompatActivity {
 
             String finalHtml = doc.toString();
             System.out.println(doc.toString());
-            webView.setWebViewClient(detailWebView);
-            webView.loadData(finalHtml, "text/html", null);
+
+            webView.post(() -> {
+                webView.setWebViewClient(detailWebView);
+                webView.loadData(finalHtml, "text/html", null);
+                stopProgressDialog();
+            });
 
         } catch (IOException e) {
             e.printStackTrace();
+            webView.post(this::stopProgressDialog);
         }
     }
 
@@ -172,6 +188,24 @@ public class PreviewEnrollmentActivity extends AppCompatActivity {
         public void onPageFinished(WebView view, String url) {
             printLayout.setVisibility(VISIBLE);
             webView = view;
+        }
+    }
+
+    public void showProgressDialog(String message, boolean cancel) {
+        if (!this.isFinishing() && !this.isDestroyed()) {
+            stopProgressDialog();
+            if(progressDialog == null){
+                progressDialog = new ProgressDialog(this);
+            }
+            progressDialog.setMessage(message);
+            progressDialog.setCancelable(cancel);
+            progressDialog.show();
+        }
+    }
+
+    public void stopProgressDialog() {
+        if (progressDialog != null) {
+            progressDialog.dismiss();
         }
     }
 
