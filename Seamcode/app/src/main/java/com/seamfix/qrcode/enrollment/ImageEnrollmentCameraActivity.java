@@ -258,12 +258,9 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
                 if(boxes.size() == 1 && !cameraCaptured){
                     Log.e("FACE-DETECTED", "COUNT IS: " + sampleBitmaps.size());
 
-                    capture.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            int progress = (sampleBitmaps.size()* 100)/IMAGE_SAMPLES;
-                            progressBar.setProgress(progress);
-                        }
+                    capture.post(() -> {
+                        int progress = (sampleBitmaps.size()* 100)/IMAGE_SAMPLES;
+                        progressBar.setProgress(progress);
                     });
 
                     Rect rect = boxes.get(0).transform2Rect();
@@ -274,20 +271,12 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
                         return;
                     }
 
-                    capture.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            showProgressDialog("Processing image", false);
-                        }
-                    });
+                    capture.post(() -> showProgressDialog("Processing image", false));
 
                     float[] mat = new CVUtil().generateEigenFace(sampleBitmaps, 50);
-                    capture.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            stopProgressDialog();
-                            displayPreview(bm, imageBytes, mat);
-                        }
+                    capture.post(() -> {
+                        stopProgressDialog();
+                        displayPreview(bm, imageBytes, mat);
                     });
 
                     sampleBitmaps.clear();
