@@ -57,7 +57,7 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
     ArrayList<Bitmap> sampleBitmaps = new ArrayList<>();
     private ProgressDialog progressDialog;
     ProgressBar progressBar;
-    static final int IMAGE_SAMPLES = 4;
+    static final int IMAGE_SAMPLES = 10;
 
 
     @Override

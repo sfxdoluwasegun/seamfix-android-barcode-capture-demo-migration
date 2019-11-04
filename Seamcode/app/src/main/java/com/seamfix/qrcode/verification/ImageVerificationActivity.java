@@ -99,7 +99,7 @@ public class ImageVerificationActivity extends AppCompatActivity {
 
     ArrayList<Bitmap> sampleBitmaps = new ArrayList<>();
     ProgressBar progressBar;
-    static final int IMAGE_SAMPLES = 4;
+    static final int IMAGE_SAMPLES = 10;
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     static {
@@ -226,17 +226,14 @@ public class ImageVerificationActivity extends AppCompatActivity {
                         sampleBitmaps.add(scaledBitmap);
                         return;
                     }
-                    capture.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            showProgressDialog("Processing image", false);
-                        }
-                    });
+                    capture.post(() -> showProgressDialog("Processing image", false));
                     final float[] mat = new CVUtil().generateEigenFace(sampleBitmaps, 50);
                     String faceData = enrollmentData.getF();
                     Log.e("FACE TEMPLATE", faceData);
                     float[] templateData = new Gson().fromJson(faceData, float[].class);
                     double score = new CosineSimilarity().cosineSimilarity(mat, templateData);
+                    Log.e("SCORE===  ", faceData);
+
                     capture.post(new Runnable() {
                         @Override
                         public void run() {
