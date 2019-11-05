@@ -10,6 +10,7 @@ import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.UiThread;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -34,6 +35,7 @@ import com.otaliastudios.cameraview.FrameProcessor;
 import com.otaliastudios.cameraview.Gesture;
 import com.otaliastudios.cameraview.GestureAction;
 import com.otaliastudios.cameraview.Size;
+import com.seamfix.qrcode.FaceFeatures;
 import com.seamfix.qrcode.TensorUtil;
 import com.seamfix.qrcode.mtcnn.Box;
 import com.seamfix.qrcode.mtcnn.MTCNN;
@@ -58,6 +60,7 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
     private ProgressDialog progressDialog;
     ProgressBar progressBar;
     static final int IMAGE_SAMPLES = 10;
+    private ImageCaptureMode mode;
 
 
     @Override
@@ -66,184 +69,79 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.image_enrollment_activity_camera);
 
-
         progressBar = findViewById(R.id.id_progress_bar);
         camera = findViewById(R.id.camera);
 
+        mode = ImageCaptureMode.SHUTTER;
         camera.setLifecycleOwner(this);
         camera.mapGesture(Gesture.TAP, GestureAction.FOCUS);
         camera.setFacing(Facing.BACK);
-        camera.addCameraListener(cameraListener);
-        camera.addFrameProcessor(frameProcessor);
         progressBar.setProgress(0);
-
+        setCaptureMode();
         capture = findViewById(R.id.enrollment_camera_capture_button);
         capture.setVisibility(View.GONE);
-        capture.setOnClickListener(v -> {
-            camera.captureSnapshot();
-        });
+        capture.setOnClickListener(v -> camera.captureSnapshot());
         mtcnn = new MTCNN(getAssets());
         tensorUtil = TensorUtil.getInstance();
         model = FileUtils.readAsset(this, "face_model.pb");
     }
 
 
+    /**
+     * Callback instance for camera view operations
+     */
     private CameraListener cameraListener = new CameraListener() {
         @Override
         public void onPictureTaken(byte[] jpeg) {
             super.onPictureTaken(jpeg);
             camera.stop();
-            byte[]normalizedJpeg = PictUtil.normalizeOrientation(jpeg);
+            byte[] normalizedJpeg = PictUtil.normalizeOrientation(jpeg);
             Bitmap capturedImage = BitmapFactory.decodeByteArray(normalizedJpeg, 0, normalizedJpeg.length);
-            Log.e("IMAGE HEIGHT", ""+capturedImage.getHeight());
+            Log.e("IMAGE HEIGHT", "" + capturedImage.getHeight());
 
             try {
                 Vector<Box> boxes = mtcnn.detectFaces(capturedImage, 40);
-                for (int i = 0; i < boxes.size(); i++) {
-                    com.seamfix.qrcode.mtcnn.Utils.drawRect(capturedImage, boxes.get(i).transform2Rect());
-                    com.seamfix.qrcode.mtcnn.Utils.drawPoints(capturedImage, boxes.get(i).landmark);
+                if (boxes.size() == 1) {
+                    Box faceBox = boxes.get(0);
+                    com.seamfix.qrcode.mtcnn.Utils.drawRect(capturedImage, faceBox.transform2Rect());
+                    com.seamfix.qrcode.mtcnn.Utils.drawPoints(capturedImage, faceBox.landmark);
                     Rect rect = boxes.get(0).transform2Rect();
                     Bitmap croppedBitmap = Bitmap.createBitmap(capturedImage, rect.left, rect.top, rect.width(), rect.height());
-                    Bitmap scaledBitmap  = Bitmap.createScaledBitmap(croppedBitmap, 200, 200, false);
-
-                    float[] mat = new CVUtil().generateEigenFace(scaledBitmap, 50);
-
-                    System.out.println("==========");
-
-                    //boolean isInit = tensorUtil.initializeTensorflowInferenceAsyn(model);
-                    //if(isInit) {
-                    //    float[] features = tensorUtil.getEmbeddings(scaledBitmap);
-                    //    displayPreview(capturedImage, normalizedJpeg, features);
-                    //}
+                    Bitmap scaledBitmap = Bitmap.createScaledBitmap(croppedBitmap, 200, 200, false);
+                    byte[]imageByte = PictUtil.convertBitmapToByteArray(scaledBitmap);
+                    String imageString = Base64.encodeToString(imageByte, Base64.NO_WRAP);
+                    float[] features = FaceFeatures.getInstance().generateFaceFeatures(imageString);
+                    displayPreview(capturedImage, normalizedJpeg, features);
+                }else{
+                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(ImageEnrollmentCameraActivity.this);
+                    alertDialog.setTitle(R.string.title_text_image_portrait);
+                    alertDialog.setMessage(getString(R.string.message_text_portarit_error));
+                    alertDialog.setPositiveButton(R.string.ok, (dialog, which) -> camera.start());
+                    alertDialog.show();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            //for(int m= 0; m<=3; m++) {
-//                FirebaseVisionFaceDetectorOptions options = Utils.Companion.getFaceDetectionOptions();
-//                FirebaseVisionImage image = FirebaseVisionImage.fromBitmap(capturedImage);
-//                FirebaseVisionFaceDetector detector = FirebaseVision.getInstance().getVisionFaceDetector(options);
-//                Task<List<FirebaseVisionFace>> result = detector.detectInImage(image);
-
-
-//                result.addOnSuccessListener(faces -> {
-//                    if (faces.size() != 1) {
-//                        Toast.makeText(EnrollmentCameraActivity.this, "More than a face was found", Toast.LENGTH_SHORT).show();
-//                        return;
-//                    }
-//                    FirebaseVisionFace face = faces.get(0);
-//                    Rect bounds = face.getBoundingBox();
-//
-//                    float[] x = new float[10];
-//                    float[] y = new float[10];
-//
-//                    if (bounds != null) {
-//                        x[Landmark.LEFT_LOWER_BOUNDING] = bounds.left;
-//                        y[Landmark.LEFT_LOWER_BOUNDING] = bounds.bottom;
-//
-//                        x[Landmark.RIGHT_LOWER_BOUNDING] = bounds.right;
-//                        y[Landmark.RIGHT_LOWER_BOUNDING] = bounds.bottom;
-//
-//                        x[Landmark.RIGHT_UPPER_BOUNDING] = bounds.right;
-//                        y[Landmark.RIGHT_UPPER_BOUNDING] = bounds.top;
-//
-//                        x[Landmark.LEFT_UPPER_BOUNDING] = bounds.left;
-//                        y[Landmark.LEFT_UPPER_BOUNDING] = bounds.top;
-//
-////                    float m = bounds.exactCenterX();
-////
-////                    x[Landmark.UPPER_FACE_CENTER] = m;
-////                    y[Landmark.UPPER_FACE_CENTER] = bounds.top;
-////
-////                    x[Landmark.LOWER_FACE_CENTER] = m;
-////                    y[Landmark.LOWER_FACE_CENTER] = bounds.bottom;
-//                    }
-//
-//
-//                    FirebaseVisionFaceLandmark rightEye = face.getLandmark(FirebaseVisionFaceLandmark.RIGHT_EYE);
-//                    if (rightEye != null) {
-//                        x[Landmark.RIGHT_EYE] = rightEye.getPosition().getX();
-//                        y[Landmark.RIGHT_EYE] = rightEye.getPosition().getY();
-//                    }
-//
-//                    FirebaseVisionFaceLandmark leftEye = face.getLandmark(FirebaseVisionFaceLandmark.LEFT_EYE);
-//                    if (leftEye != null) {
-//                        x[Landmark.LEFT_EYE] = leftEye.getPosition().getX();
-//                        y[Landmark.LEFT_EYE] = leftEye.getPosition().getY();
-//                    }
-//
-//                    FirebaseVisionFaceLandmark noseTip = face.getLandmark(FirebaseVisionFaceLandmark.NOSE_BASE);
-//                    if (noseTip != null) {
-//                        x[Landmark.NOSE_TIP] = noseTip.getPosition().getX();
-//                        y[Landmark.NOSE_TIP] = noseTip.getPosition().getY();
-//                    }
-//
-//                    FirebaseVisionFaceLandmark mouthCenter = face.getLandmark(FirebaseVisionFaceLandmark.MOUTH_BOTTOM);
-//                    if (mouthCenter != null) {
-//                        x[Landmark.MOUTH_CENTER] = mouthCenter.getPosition().getX();
-//                        y[Landmark.MOUTH_CENTER] = mouthCenter.getPosition().getY();
-//                    }
-//
-//                    FirebaseVisionFaceLandmark mouthLeft = face.getLandmark(FirebaseVisionFaceLandmark.MOUTH_LEFT);
-//                    if (mouthLeft != null) {
-//                        x[Landmark.LOWER_FACE_CENTER] = mouthLeft.getPosition().getX();
-//                        y[Landmark.LOWER_FACE_CENTER] = mouthLeft.getPosition().getY();
-//                    }
-//
-//                    FirebaseVisionFaceLandmark mouthRight = face.getLandmark(FirebaseVisionFaceLandmark.MOUTH_LEFT);
-//                    if (mouthRight != null) {
-//                        x[Landmark.UPPER_FACE_CENTER] = mouthRight.getPosition().getX();
-//                        y[Landmark.UPPER_FACE_CENTER] = mouthRight.getPosition().getY();
-//                    }
-//
-//
-//                    Log.e("X====", "" + Arrays.toString(x));
-//
-//                    Log.e("Y====", "" + Arrays.toString(y));
-//
-//                    int[] features = FaceFeatures.getInstance().generateFeatures(x, y);
-//                    Log.e("FEATRURE", "" + Arrays.toString(features));
-//
-//                    int[] features1 = FaceFeatures.getInstance().generateFeatures(x, y);
-//                    Log.e("FEATRURE1", "" + Arrays.toString(features1));
-//
-//                    int[] features2 = FaceFeatures.getInstance().generateFeatures(x, y);
-//                    Log.e("FEATRURE2", "" + Arrays.toString(features2));
-//
-//                    int[] features3 = FaceFeatures.getInstance().generateFeatures(x, y);
-//                    Log.e("FEATRURE3", "" + Arrays.toString(features3));
-//
-//                    int[] features4 = FaceFeatures.getInstance().generateFeatures(x, y);
-//                    Log.e("FEATRURE4", "" + Arrays.toString(features4));
-//
-//
-//                    displayPreview(capturedImage, normalizedJpeg, features);
-//
-//                });
-//                result.addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception e) {
-//                        Log.e("HELOO", "ERROR", e);
-//                    }
-//                });
-            }
+        }
 
 
         @Override
         public void onCameraOpened(CameraOptions options) {
             super.onCameraOpened(options);
-            //capture.setVisibility(View.VISIBLE);
+            capture.setVisibility(View.VISIBLE);
         }
     };
 
+
+    /**
+     * Camera Frame processor listener
+     */
     private FrameProcessor frameProcessor = new FrameProcessor() {
         @Override
         public void process(@NonNull Frame frame) {
-
             byte[] data  = frame.getData();
-            Size size  = frame.getSize();
             int rotation = frame.getRotation();
-
+            Size size    = frame.getSize();
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             YuvImage yuvImage = new YuvImage(data, ImageFormat.NV21, size.getWidth(), size.getHeight(), null);
@@ -257,7 +155,6 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
                 Vector<Box> boxes = mtcnn.detectFaces(bm, 40);
                 if(boxes.size() == 1 && !cameraCaptured){
                     Log.e("FACE-DETECTED", "COUNT IS: " + sampleBitmaps.size());
-
                     capture.post(() -> {
                         int progress = (sampleBitmaps.size()* 100)/IMAGE_SAMPLES;
                         progressBar.setProgress(progress);
@@ -272,13 +169,12 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
                     }
 
                     capture.post(() -> showProgressDialog("Processing image", false));
-
-                    float[] mat = new CVUtil().generateEigenFace(sampleBitmaps, 50);
+                    byte [] imageData = PictUtil.convertBitmapToByteArray(scaledBitmap);
+                    float[] features = new CVUtil().generateEigenFace(sampleBitmaps, 50);
                     capture.post(() -> {
                         stopProgressDialog();
-                        displayPreview(bm, imageBytes, mat);
+                        displayPreview(bm, imageData, features);
                     });
-
                     sampleBitmaps.clear();
                     cameraCaptured = true;
                 }else{
@@ -286,19 +182,23 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                capture.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        stopProgressDialog();
-                        Toast.makeText(ImageEnrollmentCameraActivity.this, "Hmm, something went wrong please try again", Toast.LENGTH_SHORT).show();
-                    }
+                capture.post(() -> {
+                    stopProgressDialog();
+                    Toast.makeText(ImageEnrollmentCameraActivity.this, "Hmm, something went wrong please try again", Toast.LENGTH_SHORT).show();
                 });
             }
         }
     };
 
 
-
+    /**
+     * Displays captured image dialog, with an option to retry the capture or continue
+     *
+     * @param bitmap the captured bitmap image
+     * @param features face feature extracted from the bitmap
+     * @param imageData byte array representation of the Bitmap
+     */
+    @UiThread
     private void displayPreview(Bitmap bitmap, byte[] imageData, float[] features) {
         AlertDialog launchDialog = new AlertDialog.Builder(this).create();
         View view = LayoutInflater.from(this).inflate(R.layout.camera_preview_dialog_layout, null, false);
@@ -306,17 +206,17 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
         Button retryButton  = view.findViewById(R.id.id_retry);
         ImageView imageView = view.findViewById(R.id.image_preview);
         imageView.setImageBitmap(bitmap);
-        byte[] data = PictUtil.convertBitmapToByteArray(bitmap);
 
         okButton.setOnClickListener(v -> {
             try {
-                String imageStringData = Base64.encodeToString(data, Base64.NO_WRAP);
+                String imageStringData = Base64.encodeToString(imageData, Base64.NO_WRAP);
                 String imageTemplate = new Gson().toJson(features);
                 DataSession.getInstance().getTextData().put(R.layout.enrollment_activity_camera, imageStringData);
                 DataSession.getInstance().getTextData().put(R.id.babs_template, imageTemplate);
 
                 Intent intent = new Intent(ImageEnrollmentCameraActivity.this, EnrollmentFingerTypeActivity.class);
                 startActivity(intent);
+                launchDialog.dismiss();
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -329,17 +229,43 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
             launchDialog.dismiss();
         });
 
-
         launchDialog.setView(view);
-        launchDialog.setOnDismissListener(dialog -> {
-            camera.start();
-        });
+        launchDialog.setOnDismissListener(dialog -> camera.start());
         launchDialog.setCancelable(false);
         launchDialog.show();
     }
 
+    /**
+     * Sets the capture mode of this Image capture session
+     * determines if shutter should be used or frame processing which leads to auto-capture
+     */
+    private void setCaptureMode(){
+        switch (mode){
+            case SHUTTER:{
+                if(camera != null) {
+                    camera.addCameraListener(cameraListener);
+                }
+                break;
+            }
+
+            case FRAME_PROCESSING:{
+                if(camera != null) {
+                    camera.addFrameProcessor(frameProcessor);
+                }
+                break;
+            }
+        }
+    }
+
+
+    /**
+     * Displays a dialog loader
+     *
+     * @param message text to display on the dialog
+     * @param cancel indicates if this dialog is cancelable on touching outside the dialog
+     */
     public void showProgressDialog(String message, boolean cancel) {
-        if (!this.isFinishing() && !this.isDestroyed() && this.hasWindowFocus()) {
+        if (!this.isFinishing() && !this.isDestroyed()) {
             stopProgressDialog();
             progressDialog = new ProgressDialog(this);
             progressDialog.setMessage(message);
@@ -348,25 +274,43 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
         }
     }
 
+
+    /**
+     * Dismisses any running instance of the
+     * progress dialog
+     */
     public void stopProgressDialog() {
         if (progressDialog != null) {
             progressDialog.dismiss();
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+
+    /**
+     * Loads image from capture pool
+     */
+    private void loadImageIfAvailable(){
         String imageData = DataSession.getInstance().getTextData().get(R.layout.enrollment_activity_camera);
         String babsImageTemplate = DataSession.getInstance().getTextData().get(R.id.babs_template);
         float[] templateData = new Gson().fromJson(babsImageTemplate, float[].class);
 
         if(imageData != null && !TextUtils.isEmpty(imageData)){
-           byte[] data = Base64.decode(imageData, Base64.NO_WRAP);
-           Bitmap capturedImage = BitmapFactory.decodeByteArray(data, 0, data.length);
-           displayPreview(capturedImage, data, templateData);
-           return;
+            byte[] data = Base64.decode(imageData, Base64.NO_WRAP);
+            Bitmap capturedImage = BitmapFactory.decodeByteArray(data, 0, data.length);
+            runOnUiThread(() -> displayPreview(capturedImage, data, templateData));
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Thread t = new Thread(){
+            @Override
+            public void run(){
+                loadImageIfAvailable();
+            }
+        };
+        t.start();
         camera.start();
     }
 
@@ -381,5 +325,24 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
         super.onDestroy();
         tensorUtil.closeTensorFlowInference();
         camera.stop();
+    }
+
+
+    /**
+     * Defines the mode of image capture
+     */
+    public enum ImageCaptureMode{
+        /**
+         * Used with a capture button to acquire the image. And it employs
+         * the use of face recognition technique that uses a
+         * single image for its training
+         */
+        SHUTTER,
+
+        /**
+         * Captures multiple cropped images to be used for
+         * face recognition training
+         */
+        FRAME_PROCESSING
     }
 }

@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -53,6 +54,7 @@ public class PreviewEnrollmentActivity extends AppCompatActivity {
 
         webView.getSettings().setDomStorageEnabled(true);
         detailWebView = new DetailWebView();
+        printLayout.setVisibility(View.GONE);
         Button printBtn = findViewById(R.id.ok);
         Button exitBtn = findViewById(R.id.exit);
 
@@ -63,16 +65,25 @@ public class PreviewEnrollmentActivity extends AppCompatActivity {
         Thread thread = new Thread(){
             @Override
             public void run(){
-                prepareAndShowPreview();
+                String htmlString = prepareAndShowPreview();
+                if(!TextUtils.isEmpty(htmlString)) {
+                    webView.post(() -> {
+                        webView.setWebViewClient(detailWebView);
+                        webView.loadData(htmlString, "text/html", null);
+                        stopProgressDialog();
+                    });
+                }else{
+                    webView.post(PreviewEnrollmentActivity.this::stopProgressDialog);
+                }
             }
         };
         thread.start();
     }
 
 
-    private void prepareAndShowPreview(){
+    private String prepareAndShowPreview(){
         try {
-            InputStream in = this.getAssets().open("jamb3.html");
+            InputStream in = this.getAssets().open("jamb-offline.html");
             String html = FileUtils.getStringfromInputStream(in);
 
             String imageData = DataSession.getInstance().getTextData().get(R.layout.enrollment_activity_camera);
@@ -113,16 +124,10 @@ public class PreviewEnrollmentActivity extends AppCompatActivity {
 
             String finalHtml = doc.toString();
             System.out.println(doc.toString());
-
-            webView.post(() -> {
-                webView.setWebViewClient(detailWebView);
-                webView.loadData(finalHtml, "text/html", null);
-                stopProgressDialog();
-            });
-
+            return finalHtml;
         } catch (IOException e) {
             e.printStackTrace();
-            webView.post(this::stopProgressDialog);
+            return null;
         }
     }
 

@@ -56,4 +56,6 @@
     <string name="text_button_continue_to_finger_verification">Continue to Finger Verirfication</string>
     <string name="text_please_stay_infocus">Please wait on the Progress Bar</string>
     <string name="text_id_finger_authenticity">Fingerprint Authentication</string>
+    <string name="title_text_image_portrait">Portrait</string>
+    <string name="message_text_portarit_error">Multiple or no face was detected in this capture please retry to continue</string>
 </resources>
