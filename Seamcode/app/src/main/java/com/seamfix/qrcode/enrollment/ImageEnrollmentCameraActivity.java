@@ -34,6 +34,7 @@ import com.otaliastudios.cameraview.FrameProcessor;
 import com.otaliastudios.cameraview.Gesture;
 import com.otaliastudios.cameraview.GestureAction;
 import com.otaliastudios.cameraview.Size;
+import com.seamfix.qrcode.FaceFeatures;
 import com.seamfix.qrcode.TensorUtil;
 import com.seamfix.qrcode.mtcnn.Box;
 import com.seamfix.qrcode.mtcnn.MTCNN;
@@ -57,7 +58,7 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
     ArrayList<Bitmap> sampleBitmaps = new ArrayList<>();
     private ProgressDialog progressDialog;
     ProgressBar progressBar;
-    static final int IMAGE_SAMPLES = 10;
+    static final int IMAGE_SAMPLES = 1;
 
 
     @Override
@@ -272,6 +273,9 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
                     }
 
                     capture.post(() -> showProgressDialog("Processing image", false));
+                    byte[]imageByte = PictUtil.convertBitmapToByteArray(scaledBitmap);
+                    String imageString = Base64.encodeToString(imageByte, Base64.NO_WRAP);
+                    float[] features = FaceFeatures.getInstance().generateFaceFeatures(imageString);
 
                     float[] mat = new CVUtil().generateEigenFace(sampleBitmaps, 50);
                     capture.post(() -> {

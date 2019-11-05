@@ -28,7 +28,7 @@ public class FaceFeatures {
     public native float matchFaces(float[] rawFeatures, String candidate);
 
     static {
-        System.loadLibrary("featureCalculation");
+        System.loadLibrary("native-lib");
     }
 
     public static FaceFeatures getInstance(){
