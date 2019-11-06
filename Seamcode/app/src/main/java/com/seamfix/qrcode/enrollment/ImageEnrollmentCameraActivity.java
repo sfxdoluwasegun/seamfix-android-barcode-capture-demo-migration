@@ -22,6 +22,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -61,6 +62,7 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
     ProgressBar progressBar;
     static final int IMAGE_SAMPLES = 10;
     private ImageCaptureMode mode;
+    private LinearLayout frameProcessorBar;
 
 
     @Override
@@ -69,8 +71,10 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.image_enrollment_activity_camera);
 
-        progressBar = findViewById(R.id.id_progress_bar);
-        camera = findViewById(R.id.camera);
+        camera            = findViewById(R.id.camera);
+        progressBar       = findViewById(R.id.id_progress_bar);
+        frameProcessorBar = findViewById(R.id.id_frame_processor_bar);
+
 
         mode = ImageCaptureMode.SHUTTER;
         camera.setLifecycleOwner(this);
@@ -105,7 +109,7 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
                     Box faceBox = boxes.get(0);
                     com.seamfix.qrcode.mtcnn.Utils.drawRect(capturedImage, faceBox.transform2Rect());
                     com.seamfix.qrcode.mtcnn.Utils.drawPoints(capturedImage, faceBox.landmark);
-                    Rect rect = boxes.get(0).transform2Rect();
+                    Rect rect = faceBox.transform2Rect();
                     Bitmap croppedBitmap = Bitmap.createBitmap(capturedImage, rect.left, rect.top, rect.width(), rect.height());
                     Bitmap scaledBitmap = Bitmap.createScaledBitmap(croppedBitmap, 200, 200, false);
                     byte[]imageByte = PictUtil.convertBitmapToByteArray(scaledBitmap);
@@ -128,7 +132,13 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
         @Override
         public void onCameraOpened(CameraOptions options) {
             super.onCameraOpened(options);
-            capture.setVisibility(View.VISIBLE);
+            if(mode == ImageCaptureMode.SHUTTER){
+                capture.setVisibility(View.VISIBLE);
+                frameProcessorBar.setVisibility(View.GONE);
+            }else{
+                capture.setVisibility(View.GONE);
+                frameProcessorBar.setVisibility(View.VISIBLE);
+            }
         }
     };
 
