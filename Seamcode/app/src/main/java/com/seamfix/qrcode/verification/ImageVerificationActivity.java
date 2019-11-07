@@ -41,6 +41,7 @@ import com.otaliastudios.cameraview.Size;
 import com.seamfix.qrcode.EnrollmentData;
 import com.seamfix.qrcode.FaceFeatures;
 import com.seamfix.qrcode.FingerQrCode;
+import com.seamfix.qrcode.enrollment.ImageEnrollmentCameraActivity;
 import com.seamfix.qrcode.mtcnn.Box;
 import com.seamfix.qrcode.mtcnn.MTCNN;
 import com.seamfix.seamcode.R;
@@ -48,6 +49,7 @@ import com.sf.bio.lib.PictUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Vector;
 
 
@@ -154,7 +156,7 @@ public class ImageVerificationActivity extends AppCompatActivity {
 
                     Rect rect = box.transform2Rect();
                     Bitmap croppedBitmap = Bitmap.createBitmap(bm, rect.left, rect.top, rect.width(), rect.height());
-                    Bitmap scaledBitmap  = Bitmap.createScaledBitmap(croppedBitmap, 200, 200, false);
+                    Bitmap scaledBitmap  = Bitmap.createScaledBitmap(croppedBitmap, 64, 64, false);
                     if(sampleBitmaps.size() < IMAGE_SAMPLES){
                         sampleBitmaps.add(scaledBitmap);
                         return;
@@ -164,7 +166,18 @@ public class ImageVerificationActivity extends AppCompatActivity {
                     String imageString   = Base64.encodeToString(imageByte, Base64.NO_WRAP);
                     String faceData      = enrollmentData.getF();
                     float[] templateData = new Gson().fromJson(faceData, float[].class);
-                    double score         = FaceFeatures.getInstance().matchFaces(templateData, imageString);
+                    String modelFileName = FaceFeatures.getFaceModelFileName(this);
+                    Log.e("IMAGE:", "BASE 64: " + imageString);
+
+
+                    float[] features = FaceFeatures.getInstance().generatepcafeatures(modelFileName, imageString);
+                    System.out.println(Arrays.toString(features));
+
+                    System.out.println(imageString);
+                    System.out.println(Arrays.toString(templateData));
+                    System.out.println(modelFileName);
+
+                    float score      = FaceFeatures.getInstance().matchpcafeatures(modelFileName, imageString, templateData);
                     Log.e("SCORE===  ", score + "");
 
 
@@ -172,7 +185,7 @@ public class ImageVerificationActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             stopProgressDialog();
-                            if(score> 0.6) {
+                            if(score> 0.88) {
                                 Session.getInstance().setCroppedBitmap(croppedBitmap);
                                 Intent intent = new Intent(ImageVerificationActivity.this, VerificationDetailsActivity.class);
                                 intent.putExtra("value", rawValue);

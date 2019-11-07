@@ -111,10 +111,15 @@ public class ImageEnrollmentCameraActivity extends AppCompatActivity {
                     com.seamfix.qrcode.mtcnn.Utils.drawPoints(capturedImage, faceBox.landmark);
                     Rect rect = faceBox.transform2Rect();
                     Bitmap croppedBitmap = Bitmap.createBitmap(capturedImage, rect.left, rect.top, rect.width(), rect.height());
-                    Bitmap scaledBitmap = Bitmap.createScaledBitmap(croppedBitmap, 200, 200, false);
+                    Bitmap scaledBitmap = Bitmap.createScaledBitmap(croppedBitmap, 64, 64, false);
+
                     byte[]imageByte = PictUtil.convertBitmapToByteArray(scaledBitmap);
                     String imageString = Base64.encodeToString(imageByte, Base64.NO_WRAP);
-                    float[] features = FaceFeatures.getInstance().generateFaceFeatures(imageString);
+                    String fileName = FaceFeatures.getFaceModelFileName(ImageEnrollmentCameraActivity.this);
+                    Log.e("FILE:", "NAME: " + fileName);
+                    Log.e("IMAGE:", "BASE 64: " + imageString);
+
+                    float[] features = FaceFeatures.getInstance().generatepcafeatures(fileName, imageString);
                     displayPreview(capturedImage, normalizedJpeg, features);
                 }else{
                     AlertDialog.Builder alertDialog = new AlertDialog.Builder(ImageEnrollmentCameraActivity.this);

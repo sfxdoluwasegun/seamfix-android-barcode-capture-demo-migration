@@ -72,6 +72,7 @@ dependencies {
     implementation 'com.machinezoo.sourceafis:sourceafis:3.6.0'
     implementation 'com.izettle:html2bitmap:1.9'
     implementation 'org.jsoup:jsoup:1.12.1'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
     implementation 'org.tensorflow:tensorflow-android:+'
     implementation project(':openCVLibrary341')
     implementation "android.arch.lifecycle:extensions:$archLifecycleVersion"
