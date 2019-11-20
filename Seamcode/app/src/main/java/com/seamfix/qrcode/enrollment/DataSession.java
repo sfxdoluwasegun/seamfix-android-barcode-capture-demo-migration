@@ -1,14 +1,20 @@
 package com.seamfix.qrcode.enrollment;
 
 import android.graphics.Bitmap;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.seamfix.qrcode.EnrollmentData;
 import com.seamfix.qrcode.FingerQrCode;
 import com.seamfix.seamcode.R;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
@@ -76,9 +82,30 @@ public class DataSession {
         Generate QR data for enrollment
          */
         Bitmap enrollmentQr = FingerQrCode.encodeEnrollData(enrollmentData);
-        ourInstance.setQrBitmap(enrollmentQr);
+        Bitmap outBitmap = Bitmap.createScaledBitmap(enrollmentQr, 400, 400, false);
+        saveBitmap(enrollmentQr);
+        saveBitmap(outBitmap);
+        ourInstance.setQrBitmap(outBitmap);
         return true;
     }
+
+    private void saveBitmap(Bitmap bitmap){
+        String fileDirectory = Environment.getExternalStorageDirectory().getAbsolutePath().concat("/qrBitmap");
+        File dir = new File(fileDirectory);
+        boolean isExist = dir.exists() || dir.mkdir();
+        if(isExist) {
+            String fileName = "IMG-" + System.currentTimeMillis() + ".jpg";
+            File tempFile = new File(fileDirectory.concat(File.separator).concat(fileName));
+            try (FileOutputStream out = new FileOutputStream(tempFile)) {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+                Log.i("SAVE", "Image saved");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
 
     public Bitmap getQrBitmap() {
         return qrBitmap;

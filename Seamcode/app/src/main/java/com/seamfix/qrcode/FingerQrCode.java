@@ -71,7 +71,7 @@ public class FingerQrCode {
         Log.e("BASE=====", encString);
         QRCode code = QRCode.from(encString);
         code.to(ImageType.PNG);
-        code.withSize(400, 400);
+        code.withSize(800, 800);
         return code.bitmap();
     }
 
