@@ -19,15 +19,21 @@ import com.google.zxing.common.HybridBinarizer;
 import com.machinezoo.sourceafis.FingerprintCompatibility;
 import com.machinezoo.sourceafis.FingerprintMatcher;
 import com.machinezoo.sourceafis.FingerprintTemplate;
+import com.sf.bio.lib.Hex;
 import com.sf.bio.lib.util.Crypter;
 
 import net.glxn.qrgen.android.QRCode;
 import net.glxn.qrgen.core.image.ImageType;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 public class FingerQrCode {
@@ -56,27 +62,20 @@ public class FingerQrCode {
     public static Bitmap encodeEnrollData(EnrollmentData enrollmentData){
         String data = gson.toJson(enrollmentData);
 
-        try (ByteArrayOutputStream fos = new ByteArrayOutputStream();
-             GZIPOutputStream gos = new GZIPOutputStream(fos);
-             ObjectOutputStream oos = new ObjectOutputStream(gos)) {
-
-            oos.writeObject(enrollmentData);
-            oos.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         byte[]encData = Crypter.encrypt("E5572DA36352063BBBA1321799B941B8FC337E64F5B4AB15EB01B9F68FB946A1", data);
-        String encString = Base64.encodeToString(encData, Base64.NO_WRAP);
-        Log.e("BASE=====", encString);
-        QRCode code = QRCode.from(encString);
+        char[] encHex = Hex.encodeHex(encData);
+
+        String encString = new String(encHex);//getRawString(encData); //Base64.encodeToString(encData, Base64.NO_WRAP);
+        Log.e("BASE=====", encString + " : " + encString.length());
+        QRCode code = QRCode.from(data);
         code.to(ImageType.PNG);
         code.withSize(800, 800);
         return code.bitmap();
     }
 
     public static EnrollmentData decodeEnrollmentData(String qrData){
-        byte[] encData = Base64.decode(qrData, Base64.NO_WRAP);
+        byte[] encData = Hex.decodeHex(qrData.toCharArray()); //getRawByte(qrData); //Base64.decode(qrData, Base64.NO_WRAP);
         String jsonData = Crypter.decrypt("E5572DA36352063BBBA1321799B941B8FC337E64F5B4AB15EB01B9F68FB946A1", encData);
         return gson.fromJson(jsonData, EnrollmentData.class);
     }
@@ -160,5 +159,62 @@ public class FingerQrCode {
             embeds[m-1] = f;
         }
         return embeds;
+    }
+
+
+    private static byte[] compress(String data) {
+        try {
+            byte[] encData = Crypter.encrypt("E5572DA36352063BBBA1321799B941B8FC337E64F5B4AB15EB01B9F68FB946A1", data);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            GZIPOutputStream gzip = new GZIPOutputStream(bos);
+            gzip.write(encData);
+            gzip.close();
+            byte[] compressed = bos.toByteArray();
+            bos.close();
+            return compressed;
+        }catch (IOException e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static String decompress(byte[] compressed) throws IOException {
+        ByteArrayInputStream bis = new ByteArrayInputStream(compressed);
+        GZIPInputStream gis = new GZIPInputStream(bis);
+        BufferedReader br = new BufferedReader(new InputStreamReader(gis, "UTF-8"));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while((line = br.readLine()) != null) {
+            sb.append(line);
+        }
+        br.close();
+        gis.close();
+        bis.close();
+        return sb.toString();
+    }
+
+    public static String getRawString(byte[] data){
+        String in = "";
+        for (byte datum : data) {
+            char cha = ((char) datum);
+            in = in.concat(String.valueOf(cha));
+        }
+
+        System.out.println(in);
+        System.out.println(in.length());
+        return in;
+    }
+
+    public static byte[] getRawByte(String rawString){
+        char[] charData = rawString.toCharArray();
+        byte[] recovered = new byte[charData.length];
+
+        for(int n=0; n<charData.length; n++){
+            byte cha = (byte)charData[n];
+            recovered[n] = cha;
+        }
+        System.out.println(Arrays.toString(recovered));
+        System.out.println(recovered.length);
+        return recovered;
     }
 }
