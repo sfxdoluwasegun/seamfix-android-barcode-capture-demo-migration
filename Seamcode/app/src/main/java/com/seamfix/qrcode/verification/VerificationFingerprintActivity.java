@@ -41,7 +41,7 @@ public class VerificationFingerprintActivity extends AppCompatActivity {
         SingleFingerCaptureView slapFingerCaptureView = findViewById(R.id.id_finger_capture_view);
 
         String templateData = getIntent().getStringExtra("value");
-        EnrollmentData enrollmentData = FingerQrCode.decodeEnrollmentData(templateData);
+        EnrollmentData enrollmentData = FingerQrCode.decode(templateData);
         if(enrollmentData!= null){
             decodedIsoTemplate = enrollmentData.getP();
             fingerName = enrollmentData.getD();

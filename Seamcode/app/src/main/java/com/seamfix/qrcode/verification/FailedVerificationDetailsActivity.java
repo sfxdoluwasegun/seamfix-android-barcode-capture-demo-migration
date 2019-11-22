@@ -33,7 +33,7 @@ public class FailedVerificationDetailsActivity extends AppCompatActivity {
         candidateImage = findViewById(R.id.id_candidate_image);
 
         String templateData = getIntent().getStringExtra("value");
-        EnrollmentData enrollmentData = FingerQrCode.decodeEnrollmentData(templateData);
+        EnrollmentData enrollmentData = FingerQrCode.decode(templateData);
         if(enrollmentData != null && enrollmentData.getT() != null){
             String []textData = enrollmentData.getT().split(":");
             if(textData.length == 4){

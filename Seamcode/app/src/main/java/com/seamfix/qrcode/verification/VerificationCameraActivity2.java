@@ -118,7 +118,7 @@ public class VerificationCameraActivity2 extends AppCompatActivity {
                 FirebaseVisionBarcode code = result.get(0);
                 String rawValue = code.getRawValue();
                 barcodeDetected = true;
-                enrollmentData = FingerQrCode.decodeEnrollmentData(rawValue);
+                enrollmentData = FingerQrCode.decode(rawValue);
                 if(enrollmentData != null){
                     capture.post(() -> capture.setVisibility(View.VISIBLE));
                 }

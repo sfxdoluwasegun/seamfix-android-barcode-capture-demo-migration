@@ -132,7 +132,7 @@ public class ImageVerificationActivity extends AppCompatActivity {
                 Log.e("BAR", "BAR DETECTED=====" /* +text*/);
                 Log.e("RAW", " DATA" + mResult.getText());
                 rawValue = mResult.getText();
-                enrollmentData = FingerQrCode.decodeEnrollmentData(rawValue);
+                enrollmentData = FingerQrCode.decode(rawValue);
                 Log.e("DECODED", " DATA===" + mResult.getText());
                 barcodeDetected = true;
             } catch (NotFoundException | ChecksumException | FormatException e) {

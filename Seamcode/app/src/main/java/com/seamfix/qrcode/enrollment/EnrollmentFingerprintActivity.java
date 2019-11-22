@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.view.WindowManager;
 
@@ -77,6 +78,16 @@ public class EnrollmentFingerprintActivity extends AppCompatActivity {
         }
     };
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String finger = DataSession.getInstance().getTextData().get(R.layout.activity_test_single_finger);
+        String type = DataSession.getInstance().getTextData().get(R.id.finger_capture_type);
+        if(!TextUtils.isEmpty(finger) && !TextUtils.isEmpty(type)){
+            alreadyCapturedDialog();
+        }
+    }
+
     private void captureSuccessful(byte[] wsqData) {
         AlertDialog.Builder launchDialog = new AlertDialog.Builder(this);
         launchDialog.setMessage(R.string.message_capture);
@@ -86,6 +97,23 @@ public class EnrollmentFingerprintActivity extends AppCompatActivity {
             String wsqString = Base64.encodeToString(wsqData, Base64.NO_WRAP);
             DataSession.getInstance().getTextData().put(R.layout.activity_test_single_finger, wsqString);
             DataSession.getInstance().getTextData().put(R.id.finger_capture_type, fingerTypes.getValue());
+
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(this::collateData);
+
+        });
+
+        launchDialog.setNegativeButton(R.string.text_recapture_fprint, null);
+        launchDialog.setCancelable(false);
+        launchDialog.show();
+    }
+
+    private void alreadyCapturedDialog() {
+        AlertDialog.Builder launchDialog = new AlertDialog.Builder(this);
+        launchDialog.setMessage(R.string.message_capture);
+        launchDialog.setTitle(R.string.text_save_enrollment);
+
+        launchDialog.setPositiveButton(R.string.text_save_enrollment_button, (dialog, which) -> {
 
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(this::collateData);
