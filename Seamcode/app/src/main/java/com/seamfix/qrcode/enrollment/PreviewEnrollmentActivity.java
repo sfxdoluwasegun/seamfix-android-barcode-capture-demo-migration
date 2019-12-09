@@ -2,8 +2,10 @@ package com.seamfix.qrcode.enrollment;
 
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.os.Bundle;
@@ -18,6 +20,7 @@ import android.view.WindowManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -39,10 +42,12 @@ import static android.view.View.VISIBLE;
 
 public class PreviewEnrollmentActivity extends AppCompatActivity {
 
-    private LinearLayout printLayout;
+    private LinearLayout printLayout, qrGroupLayout;
     private WebView webView;
     private DetailWebView detailWebView;
+    private ImageView qrImagView, photoImageView;
     private ProgressDialog progressDialog;
+    private int previewOption;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,34 +57,122 @@ public class PreviewEnrollmentActivity extends AppCompatActivity {
         printLayout = findViewById(R.id.custom_toast_layout_id);
         webView = findViewById(R.id.web_view);
 
+        qrGroupLayout = findViewById(R.id.id_qr_group);
+        photoImageView = findViewById(R.id.id_photo);
+        qrImagView = findViewById(R.id.id_qr_code);
+
+
         webView.getSettings().setDomStorageEnabled(true);
         detailWebView = new DetailWebView();
         printLayout.setVisibility(View.GONE);
+        qrGroupLayout.setVisibility(View.GONE);
+
         Button printBtn = findViewById(R.id.ok);
         Button exitBtn = findViewById(R.id.exit);
 
         exitBtn.setOnClickListener(v -> exitDialogWarning());
-        printBtn.setOnClickListener(v -> saveImage(webView));
+        printBtn.setOnClickListener(v -> {
 
+            if(previewOption == 2){
+                saveViewToBitmap();
+            }else {
+                saveImage(webView);
+            }
+        });
+
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setTitle(R.string.text_preview);
+        alert.setMessage(R.string.text_preview_message);
+        alert.setPositiveButton(R.string.text_preview_option_card, (dialog, which) -> startPreview(2));
+        alert.setNeutralButton(R.string.text_preview_option_full_html, (dialog, which) -> {
+            startPreview(1);
+        });
+        alert.show();
+
+
+    }
+
+    private void startPreview(int option){
+        previewOption = option;
         showProgressDialog("Preparing Preview", false);
         Thread thread = new Thread(){
             @Override
             public void run(){
-                String htmlString = prepareAndShowPreview();
-                if(!TextUtils.isEmpty(htmlString)) {
-                    webView.post(() -> {
-                        webView.setWebViewClient(detailWebView);
-                        webView.loadData(htmlString, "text/html", null);
-                        stopProgressDialog();
-                    });
-                }else{
-                    webView.post(PreviewEnrollmentActivity.this::stopProgressDialog);
+                switch (previewOption){
+                    case 1:{
+                        String htmlString = prepareAndShowPreview();
+                        if(!TextUtils.isEmpty(htmlString)) {
+                            webView.post(() -> {
+                                webView.setWebViewClient(detailWebView);
+                                webView.loadData(htmlString, "text/html", null);
+                                stopProgressDialog();
+                            });
+                        }else{
+                            webView.post(PreviewEnrollmentActivity.this::stopProgressDialog);
+                        }
+                        break;
+                    }
+
+                    case 2:{
+                        qrGroupLayout.post(() -> prepareAndShowViewPreviewCard());
+                        break;
+                    }
                 }
             }
         };
         thread.start();
     }
 
+
+    private void prepareAndShowViewPreviewCard(){
+        try {
+
+            String imageData   = DataSession.getInstance().getTextData().get(R.layout.enrollment_activity_camera);
+            byte[] baseData    = Base64.decode(imageData, Base64.NO_WRAP);
+            Bitmap imageBitmap = BitmapFactory.decodeByteArray(baseData, 0, baseData.length);
+            Bitmap icon        = DataSession.getInstance().getQrBitmap();
+
+            qrGroupLayout.setVisibility(VISIBLE);
+            photoImageView.setImageBitmap(imageBitmap);
+            qrImagView.setImageBitmap(icon);
+            printLayout.setVisibility(VISIBLE);
+            stopProgressDialog();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String prepareAndShowPreviewCard(){
+        try {
+            InputStream in = this.getAssets().open("jamb-offline-2.html");
+            String html = FileUtils.getStringfromInputStream(in);
+
+            String imageData = DataSession.getInstance().getTextData().get(R.layout.enrollment_activity_camera);
+            String image     = String.format("data:image/png;base64,%s", imageData);
+            Bitmap icon      = DataSession.getInstance().getQrBitmap();
+
+            byte[] qrData   = PictUtil.convertBitmapToByteArray(icon);
+            String qr       = Base64.encodeToString(qrData, Base64.NO_WRAP);
+            String webQr    = String.format("data:image/png;base64,%s", qr);
+
+            /*
+            Generate and insert Qr code
+             */
+            Document doc = Jsoup.parse(html, "utf-8");
+            Element divTag = doc.getElementById("userImage");
+            divTag.attr("src", image);
+
+            Element divQrTag = doc.getElementById("qrCode");
+            divQrTag.attr("src", webQr);
+
+            String finalHtml = doc.toString();
+            System.out.println(doc.toString());
+            return finalHtml;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     private String prepareAndShowPreview(){
         try {
@@ -155,11 +248,57 @@ public class PreviewEnrollmentActivity extends AppCompatActivity {
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
                 Log.i("SAVE", "Image saved");
                 Toast.makeText(this, "Image saved to gallery successfully", Toast.LENGTH_SHORT).show();
+                //exitEnrollment();
+                saveViewBitmapDialog();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void saveViewBitmapDialog(){
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setTitle(R.string.text_save_id_version);
+        alert.setMessage(R.string.text_save_id_too);
+        alert.setPositiveButton(R.string.text_yes, (dialog, which) -> {
+            webView.setVisibility(View.GONE);
+            printLayout.setVisibility(View.GONE);
+            previewOption = 2;
+            prepareAndShowViewPreviewCard();
+        });
+        alert.setNegativeButton(R.string.text_no, (dialog, which) -> {
+            exitEnrollment();
+        });
+        alert.show();
+    }
+
+    private void saveViewToBitmap(){
+        Bitmap bitmap = getBitmapFromView(qrGroupLayout);
+
+        String fileDirectory = Environment.getExternalStorageDirectory().getAbsolutePath().concat("/qrCard");
+        File dir = new File(fileDirectory);
+        boolean isExist = dir.exists() || dir.mkdir();
+        if(isExist) {
+            String fileName = "IMG-" + System.currentTimeMillis() + ".png";
+            File tempFile = new File(fileDirectory.concat(File.separator).concat(fileName));
+            try (FileOutputStream out = new FileOutputStream(tempFile)) {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+                Log.i("SAVE", "Image saved");
+                Toast.makeText(this, "Image saved to gallery successfully", Toast.LENGTH_SHORT).show();
                 exitEnrollment();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    private static Bitmap getBitmapFromView(View view) {
+        view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        Bitmap bitmap = Bitmap.createBitmap(view.getMeasuredWidth(), view.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+        view.draw(canvas);
+        return bitmap;
     }
 
 

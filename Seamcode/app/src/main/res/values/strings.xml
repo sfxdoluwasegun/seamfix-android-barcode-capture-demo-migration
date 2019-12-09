@@ -58,4 +58,13 @@
     <string name="text_id_finger_authenticity">Fingerprint Authentication</string>
     <string name="title_text_image_portrait">Portrait</string>
     <string name="message_text_portarit_error">Multiple or no face was detected in this capture please retry to continue</string>
+    <string name="text_preview">Preview</string>
+    <string name="text_preview_message">Please select your prefered preview type</string>
+    <string name="text_preview_option_card">ID Card</string>
+    <string name="text_preview_option_full_html">Full</string>
+    <string name="text_save_id_too">Would you like to save the ID card version?</string>
+    <string name="text_save_id_version">Save ID</string>
+    <string name="text_yes">Yes</string>
+    <string name="text_no">No</string>
+    <string name="text_title_idqr">IDQR</string>
 </resources>

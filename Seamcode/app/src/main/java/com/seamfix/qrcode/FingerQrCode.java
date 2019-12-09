@@ -8,6 +8,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.ChecksumException;
+import com.google.zxing.EncodeHintType;
 import com.google.zxing.FormatException;
 import com.google.zxing.LuminanceSource;
 import com.google.zxing.MultiFormatReader;
@@ -16,6 +17,7 @@ import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Reader;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.machinezoo.sourceafis.FingerprintCompatibility;
 import com.machinezoo.sourceafis.FingerprintMatcher;
 import com.machinezoo.sourceafis.FingerprintTemplate;
@@ -36,6 +38,8 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -85,8 +89,13 @@ public class FingerQrCode {
 //        }
         String encString = encode(enrollmentData);
         Log.e("BASE=====", encString + " : " + encString.length());
+
         QRCode code = QRCode.from(encString);
         code.to(ImageType.PNG);
+        code.withHint(EncodeHintType.CHARACTER_SET, "UTF-8");
+        code.withHint(EncodeHintType.MARGIN, 2);
+        code.withErrorCorrection(ErrorCorrectionLevel.M);
+
         code.withSize(1100, 1100);
         return code.bitmap();
     }
