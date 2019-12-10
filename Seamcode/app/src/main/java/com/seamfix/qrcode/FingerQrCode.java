@@ -94,7 +94,6 @@ public class FingerQrCode {
         code.to(ImageType.PNG);
         code.withHint(EncodeHintType.CHARACTER_SET, "UTF-8");
         code.withHint(EncodeHintType.MARGIN, 2);
-        code.withErrorCorrection(ErrorCorrectionLevel.M);
 
         code.withSize(1100, 1100);
         return code.bitmap();

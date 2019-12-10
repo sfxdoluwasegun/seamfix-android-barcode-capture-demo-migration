@@ -26,12 +26,12 @@ import com.google.zxing.BinaryBitmap;
 import com.google.zxing.ChecksumException;
 import com.google.zxing.FormatException;
 import com.google.zxing.LuminanceSource;
-import com.google.zxing.MultiFormatReader;
 import com.google.zxing.NotFoundException;
 import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Reader;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.qrcode.QRCodeReader;
 import com.otaliastudios.cameraview.CameraView;
 import com.otaliastudios.cameraview.Facing;
 import com.otaliastudios.cameraview.FrameProcessor;
@@ -41,7 +41,6 @@ import com.otaliastudios.cameraview.Size;
 import com.seamfix.qrcode.EnrollmentData;
 import com.seamfix.qrcode.FaceFeatures;
 import com.seamfix.qrcode.FingerQrCode;
-import com.seamfix.qrcode.enrollment.ImageEnrollmentCameraActivity;
 import com.seamfix.qrcode.mtcnn.Box;
 import com.seamfix.qrcode.mtcnn.MTCNN;
 import com.seamfix.seamcode.R;
@@ -98,7 +97,8 @@ public class ImageVerificationActivity extends AppCompatActivity {
         capture.setOnClickListener(v -> camera.captureSnapshot());
 
         mtcnn  = new MTCNN(getAssets());
-        reader = new MultiFormatReader();
+        reader = new QRCodeReader();
+        reader.reset();
         Session.getInstance().destroyInstance();
     }
 
@@ -127,6 +127,7 @@ public class ImageVerificationActivity extends AppCompatActivity {
         Log.e("BAR", "WAITING=====");
 
         if (!barcodeDetected) {
+            reader.reset();
             try {
                 Result mResult = reader.decode(bitmap);
                 Log.e("BAR", "BAR DETECTED=====" /* +text*/);
