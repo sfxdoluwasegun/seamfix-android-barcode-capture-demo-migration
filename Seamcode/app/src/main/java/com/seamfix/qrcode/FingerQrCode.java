@@ -45,7 +45,6 @@ import java.util.zip.GZIPOutputStream;
 
 public class FingerQrCode {
 
-    private static final String SEPARATION = ",";
     private static Gson gson = new Gson();
 
     public static Bitmap encodeWsqTemplate(byte[] wsqData, String name){
@@ -67,34 +66,11 @@ public class FingerQrCode {
     }
 
     public static Bitmap encodeEnrollData(EnrollmentData enrollmentData){
-        String data = gson.toJson(enrollmentData);
-
-
-        byte[]encData = Crypter.encrypt("E5572DA36352063BBBA1321799B941B8FC337E64F5B4AB15EB01B9F68FB946A1", data);
-        char[] encHex = Hex.encodeHex(encData);
-        String main = Base64.encodeToString(encData, Base64.NO_WRAP);
-        String hexString = new String(encHex);
-
-        //String encString = new String(encHex);//getRawString(encData); //Base64.encodeToString(encData, Base64.NO_WRAP);
-        //String encString = new String(encData, StandardCharsets.UTF_8);
-        //byte[] dd = encString.getBytes(StandardCharsets.UTF_8);
-
-        //String mm = Crypter.decrypt("E5572DA36352063BBBA1321799B941B8FC337E64F5B4AB15EB01B9F68FB946A1", dd);
-
-        //encString = "5b48b743f6215074f2d1dd3f5d6c7aa4cf64519cc3aba06b224202ab2bbc9b14d09e8f29ffd070c38d64d16378087a2643574a38358281a9719f5d3782fbf633ffdd1b87bf51083dd5d84db4e77262ac2e45856e10535275b4b6b97fe11de84bd6fefb36e7c7944e05235dcd16096440cf54e25a7875b7483e9181e72c56f26f81e419229cf441100eaf260a5c62dbb1981a1aa993ce7b04d81066751500ba3230aa5f5e7b08a0e64665930ed4d62ab0733ef3bb942cc7fc672a20c242702e4a0dda57a28e6912d1bf45122f79c7cf3d6085582a56f40ea1811c48a27d9094475549a1e23946bf2f7495aae7ac5a657c11eaad2788a90d12847ebb5d4be6dff17e5cabdd5e8fa8e85102f313c3104c817e0d8f4d1d85614713fce8543e5fdf529f2a1376a15bb01d9e65b38f6a033642837a83d91bb476acf8f1a0e975565f7547bc1d5806eaf7ac39de26b7a0ad5f84a28349a16a818fe7152556933cb2bfb94de0bfd39f5aaa8d7801b47131283a8ebda0a668a70d1f02ada190373f7dc4494f5aa227cf533f746d617337b156a4f5643fd3d4a153d4a3c606b59afc3ea0d63de1f4de45399548ad3167983352c5636a97a609f2b091fc8c64fb8a8c858faab58f10e6883d135ab7a22c9c99e038a0ddc0daab8bba8170d3e217a945d6def2a1df09e6376e41e6a2d2472330ffa6d3bd026967ccb37ee1ecdff1c1ca0e9697a374a5c32351f90fd6cfa6edea7d00d4d42a047a7aa6410739b4638a0b833944f2b5c28e4e41897f981562ef361e520b733858483e417d4ba60de8885321c69af7ac90a2c95e838a680925a004c527899362366c29c41451d933a8ddad11808a58d95a900f6259ae69b0df4620cc1c206f534df1e5d309f8424c3b3cd3458e60";
-//        String encString = "";
-//        for(char m : encHex){
-//            CharSequence sequence = new CharSequence(encHex);
-//            encString = (String)m;
-//        }
         String encString = encode(enrollmentData);
-        Log.e("BASE=====", encString + " : " + encString.length());
-
         QRCode code = QRCode.from(encString);
         code.to(ImageType.PNG);
         code.withHint(EncodeHintType.CHARACTER_SET, "UTF-8");
         code.withHint(EncodeHintType.MARGIN, 2);
-
         code.withSize(1100, 1100);
         return code.bitmap();
     }
@@ -220,19 +196,6 @@ public class FingerQrCode {
         }catch (Exception e){
             e.printStackTrace();
         }
-
-
-//        GZIPInputStream gis = new GZIPInputStream(bis);
-//        BufferedReader br = new BufferedReader(new InputStreamReader(gis, "UTF-8"));
-//        StringBuilder sb = new StringBuilder();
-//        String line;
-//        while((line = br.readLine()) != null) {
-//            sb.append(line);
-//        }
-//        br.close();
-//        gis.close();
-//        bis.close();
-//        return sb.toString();
         return null;
     }
 
@@ -289,7 +252,6 @@ public class FingerQrCode {
         byte[] decrypt = Crypter.decrypt("E5572DA36352063BBBA1321799B941B8FC337E64F5B4AB15EB01B9F68FB946A1", base64Data, null);
         byte[] decompressed = decompress(decrypt);
 
-        EnrollmentData enrollmentData = SerializationUtils.deserialize(decompressed);
-        return enrollmentData;
+        return decompressed == null? null : SerializationUtils.deserialize(decompressed);
     }
 }
